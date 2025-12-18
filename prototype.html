@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0b0f1a, #000);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+    }
+
+    .top {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .diamond-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diamond {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #8fd3f4, #84fab0);
+      clip-path: polygon(
+        50% 0%,
+        90% 25%,
+        100% 60%,
+        50% 100%,
+        0% 60%,
+        10% 25%
+      );
+      animation: pulse 3s infinite ease-in-out;
+      transition: transform 0.1s, filter 0.1s;
+      filter: brightness(1);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .bottom {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: #1f6bff;
+      color: #fff;
+    }
+
+    button:disabled {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <div id="level">LEVEL 1</div>
+    <div id="progress">0 / 100</div>
+  </div>
+
+  <div class="diamond-wrapper">
+    <div id="diamond" class="diamond"></div>
+  </div>
+
+  <div class="bottom">
+    <button id="tapBtn">TAP</button>
+    <div id="timer"></div>
+  </div>
+
+<script>
+  const diamond = document.getElementById('diamond');
+  const tapBtn = document.getElementById('tapBtn');
+  const progressText = document.getElementById('progress');
+  const timerText = document.getElementById('timer');
+
+  let taps = 0;
+  let active = false;
+  let timeLeft = 0;
+
+  tapBtn.onclick = () => {
+    if (active) return;
+
+    active = true;
+    tapBtn.disabled = true;
+    taps = 0;
+    timeLeft = 5;
+
+    timerText.innerText = '5 сек';
+
+    const session = setInterval(() => {
+      timeLeft--;
+      timerText.innerText = timeLeft > 0 ? timeLeft + ' сек' : '';
+
+      if (timeLeft <= 0) {
+        clearInterval(session);
+        active = false;
+        tapBtn.disabled = false;
+      }
+    }, 1000);
+
+    const tapListener = () => {
+      if (!active) return;
+      taps++;
+      progressText.innerText = taps + ' / 100';
+
+      // микро-реакция
+      diamond.style.transform = `scale(${1 + taps * 0.002})`;
+      diamond.style.filter = `brightness(${1 + taps * 0.01})`;
+    };
+
+    diamond.addEventListener('click', tapListener);
+
+    setTimeout(() => {
+      diamond.removeEventListener('click', tapListener);
+    }, 5000);
+  };
+</script>
+
+</body>
+</html>
