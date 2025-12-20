@@ -42,26 +42,26 @@
       pointer-events: none;
       z-index: 10;
       color: rgba(135, 206, 255, 0.95);
-      text-shadow: 0 0 20px rgba(135, 206, 255, 0.8);
-      animation: timerPulse 2s infinite ease-in-out;
+      text-shadow: 0 0 20px rgba(135, 206, 255, 0.6);
+      animation: breathe 2.5s infinite ease-in-out;
     }
 
-    @keyframes timerPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    @keyframes breathe {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
     }
 
     #timer.urgent {
-      color: rgba(255, 182, 193, 0.95); /* Нежно-розовый */
+      color: rgba(255, 182, 193, 1);
       text-shadow: 0 0 30px rgba(255, 182, 193, 0.9);
-      animation: urgentPulse 0.5s infinite ease-in-out;
+      animation: urgentBreathe 0.8s infinite ease-in-out;
     }
 
-    @keyframes urgentPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
+    @keyframes urgentBreathe {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { opacity: 0.8; }
     }
 
     .diamond {
@@ -156,6 +156,8 @@
   let active = false;
 
   const diamondsPerLevel = 100;
+  const realDuration = 8000;  // Реальные 8 секунд
+  const displayedDuration = 5000;  // Показываем как 5 секунд
   let startTime = 0;
   let timerInterval = null;
 
@@ -168,10 +170,14 @@
 
   updateUI();
 
-  // Формат таймера 00:05:00 (секунды:сотые)
-  function formatTime(remaining) {
-    const totalSeconds = Math.floor(remaining);
-    const hundredths = Math.round((remaining - totalSeconds) * 100);
+  // Показываем таймер как 5 секунд, но растягиваем на 8 реальных
+  function formatDisplayedTime(elapsedRealMs) {
+    const progressRatio = elapsedRealMs / realDuration;
+    const displayedElapsed = progressRatio * displayedDuration;
+    const remainingDisplayedMs = Math.max(displayedDuration - displayedElapsed, 0);
+
+    const totalSeconds = Math.floor(remainingDisplayedMs / 1000);
+    const hundredths = Math.round((remainingDisplayedMs % 1000) / 10);
     return `00:${totalSeconds.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
   }
 
@@ -185,71 +191,31 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timerText.classList.remove('urgent');
-    timerText.innerText = formatTime(5);
+    timerText.innerText = '00:05:00'; // Начинаем с 5 секунд
 
-    startTime = performance.now(); // Более точное время
+    startTime = performance.now();
 
     timerInterval = setInterval(() => {
-      const elapsedMs = performance.now() - startTime;
-      const remaining = Math.max(5 - elapsedMs / 1000, 0);
-      timerText.innerText = formatTime(remaining);
+      const elapsedRealMs = performance.now() - startTime;
+      const remainingRealMs = Math.max(realDuration - elapsedRealMs, 0);
 
-      if (remaining <= 1) {
+      timerText.innerText = formatDisplayedTime(elapsedRealMs);
+
+      // Розовый в "последние" 1.5 визуальные секунды (примерно последние 2.4 реальные секунды)
+      if (remainingRealMs <= (realDuration * 1.5 / 5)) {
         timerText.classList.add('urgent');
       }
 
-      if (remaining <= 0) {
+      if (remainingRealMs <= 0) {
         clearInterval(timerInterval);
         timerText.innerText = '';
         active = false;
         tapBtn.disabled = false;
       }
-    }, 50);
+    }, 30);
 
     const handleTap = (e) => {
       if (!active) return;
       e.preventDefault();
 
-      const touches = e.touches ? e.touches.length : 1;
-      for (let i = 0; i < touches; i++) {
-        tapsInSession++;
-        totalDiamonds++;
-        progress++;
-
-        if (progress >= diamondsPerLevel) {
-          progress = 0;
-          level++;
-        }
-
-        diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
-        diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
-
-        updateUI();
-        localStorage.setItem('totalDiamonds', totalDiamonds);
-        localStorage.setItem('level', level);
-        localStorage.setItem('progress', progress);
-      }
-    };
-
-    tapArea.addEventListener('touchstart', handleTap, { passive: false });
-    tapArea.addEventListener('click', handleTap);
-
-    setTimeout(() => {
-      tapArea.removeEventListener('touchstart', handleTap);
-      tapArea.removeEventListener('click', handleTap);
-      clearInterval(timerInterval);
-      timerText.innerText = '';
-      active = false;
-      tapBtn.disabled = false;
-    }, 5000);
-  }
-
-  tapBtn.onclick = startSession;
-
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
-</script>
-
-</body>
-</html>
+      const touches = e.touches ? e.touches
