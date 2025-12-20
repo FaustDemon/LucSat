@@ -17,7 +17,7 @@
       align-items: center;
       justify-content: space-between;
       height: 100vh;
-      touch-action: manipulation; /* Помогает против случайного сворачивания */
+      touch-action: manipulation;
     }
 
     .top {
@@ -35,6 +35,38 @@
       width: 100%;
     }
 
+    /* Таймер выше алмаза */
+    #timer {
+      font-size: 64px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      pointer-events: none;
+      z-index: 10;
+      color: rgba(135, 206, 255, 0.95);
+      text-shadow: 0 0 20px rgba(135, 206, 255, 0.8);
+      animation: timerPulse 2s infinite ease-in-out;
+    }
+
+    /* Пульсация таймера */
+    @keyframes timerPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Сильная пульсация + розовый цвет в последние секунды */
+    #timer.urgent {
+      color: rgba(255, 182, 193, 0.95); /* Нежно-розовый */
+      text-shadow: 0 0 30px rgba(255, 182, 193, 0.9);
+      animation: urgentPulse 0.5s infinite ease-in-out;
+    }
+
+    @keyframes urgentPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
     .diamond {
       width: 120px;
       height: 120px;
@@ -50,17 +82,6 @@
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
-    }
-
-    /* Большой таймер над алмазом */
-    #timer {
-      font-size: 48px;
-      font-weight: bold;
-      color: rgba(135, 206, 255, 0.95);
-      text-shadow: 0 0 20px rgba(135, 206, 255, 0.8);
-      margin-bottom: 20px;
-      pointer-events: none;
-      z-index: 10;
     }
 
     .bottom {
@@ -81,7 +102,6 @@
       background: #444;
     }
 
-    /* Прозрачный слой для тапов по всему экрану */
     #tapArea {
       position: absolute;
       top: 0;
@@ -108,9 +128,9 @@
   </div>
 
   <div class="diamond-wrapper">
-    <div id="timer"></div>
+    <div id="timer">00:05:00</div>
     <div id="diamond" class="diamond"></div>
-    <div id="tapArea"></div> <!-- Невидимая зона для тапов по всему экрану -->
+    <div id="tapArea"></div>
   </div>
 
   <div class="bottom">
@@ -118,7 +138,7 @@
   </div>
 
 <script>
-  // Авто-очистка для теста
+  // Авто-очистка
   if (window.location.hash === '#clear') {
     localStorage.clear();
     window.location.hash = '';
@@ -151,6 +171,12 @@
 
   updateUI();
 
+  function formatTime(remaining) {
+    const secs = Math.floor(remaining);
+    const hundredths = Math.round((remaining - secs) * 100);
+    return `00:${secs.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
+  }
+
   function startSession() {
     if (active) return;
 
@@ -160,14 +186,22 @@
 
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
+    timerText.classList.remove('urgent');
 
     startTime = Date.now();
-    timerText.innerText = '5.00';
+    timerText.innerText = formatTime(5);
 
     timerInterval = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 1000;
       const remaining = Math.max(5 - elapsed, 0);
-      timerText.innerText = remaining.toFixed(2);
+      timerText.innerText = formatTime(remaining);
+
+      // Последняя секунда — розовый + сильная пульсация
+      if (remaining <= 1) {
+        timerText.classList.add('urgent');
+      } else {
+        timerText.classList.remove('urgent');
+      }
 
       if (remaining <= 0) {
         clearInterval(timerInterval);
