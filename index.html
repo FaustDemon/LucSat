@@ -35,19 +35,33 @@
       width: 100%;
     }
 
-    /* Таймер — моноширинный шрифт, без дёрганья */
+    /* Таймер — отдельные блоки для полной стабильности */
     #timer {
-      font-family: 'Courier New', Courier, monospace; /* Все цифры одинаковой ширины */
-      font-size: 60px;
-      font-weight: bold;
-      margin-bottom: 80px; /* Выше алмаза */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 80px;
       pointer-events: none;
       z-index: 10;
-      color: #8fd3f4;
-      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5); /* Минимальное свечение */
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 60px;
+      font-weight: bold;
       animation: softBreathe 4s infinite ease-in-out;
-      width: 300px; /* Фикс ширины */
+    }
+
+    .timer-part {
+      width: 60px; /* Фиксированная ширина для каждой части */
       text-align: center;
+    }
+
+    .timer-colon {
+      width: 20px;
+      text-align: center;
+    }
+
+    #timer span {
+      color: #8fd3f4;
+      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
     }
 
     @keyframes softBreathe {
@@ -57,9 +71,12 @@
     }
 
     /* Розовый в конце */
-    #timer.urgent {
+    #timer.urgent span {
       color: #ff69b4;
       text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+    }
+
+    #timer.urgent {
       animation: urgentBreathe 1.2s infinite ease-in-out;
     }
 
@@ -130,7 +147,13 @@
   </div>
 
   <div class="diamond-wrapper">
-    <div id="timer"></div>
+    <div id="timer">
+      <span class="timer-part" id="timerMinutes">00</span>
+      <span class="timer-colon">:</span>
+      <span class="timer-part" id="timerSeconds">05</span>
+      <span class="timer-colon">:</span>
+      <span class="timer-part" id="timerHundredths">00</span>
+    </div>
     <div id="diamond" class="diamond"></div>
     <div id="tapArea"></div>
   </div>
@@ -153,7 +176,10 @@
   const levelText = document.getElementById('level');
   const totalDiamondsText = document.getElementById('totalDiamonds');
   const progressBar = document.getElementById('progressBar');
-  const timerText = document.getElementById('timer');
+  const timer = document.getElementById('timer');
+  const timerMinutes = document.getElementById('timerMinutes');
+  const timerSeconds = document.getElementById('timerSeconds');
+  const timerHundredths = document.getElementById('timerHundredths');
 
   let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
   let level = parseInt(localStorage.getItem('level')) || 1;
@@ -175,14 +201,16 @@
 
   updateUI();
 
-  function formatDisplayedTime(elapsedRealMs) {
+  function updateTimerDisplay(elapsedRealMs) {
     const progressRatio = elapsedRealMs / realDuration;
     const displayedElapsed = progressRatio * displayedDuration;
     const remainingDisplayedMs = Math.max(displayedDuration - displayedElapsed, 0);
 
     const totalSeconds = Math.floor(remainingDisplayedMs / 1000);
     const hundredths = Math.round((remainingDisplayedMs % 1000) / 10);
-    return `00:${totalSeconds.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
+
+    timerSeconds.innerText = totalSeconds.toString().padStart(2, '0');
+    timerHundredths.innerText = hundredths.toString().padStart(2, '0');
   }
 
   function startSession() {
@@ -194,8 +222,10 @@
 
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
-    timerText.classList.remove('urgent');
-    timerText.innerText = '00:05:00';
+    timer.classList.remove('urgent');
+    timerMinutes.innerText = '00';
+    timerSeconds.innerText = '05';
+    timerHundredths.innerText = '00';
 
     startTime = performance.now();
 
@@ -203,15 +233,15 @@
       const elapsedRealMs = performance.now() - startTime;
       const remainingRealMs = Math.max(realDuration - elapsedRealMs, 0);
 
-      timerText.innerText = formatDisplayedTime(elapsedRealMs);
+      updateTimerDisplay(elapsedRealMs);
 
       if (remainingRealMs <= realDuration * (1.5 / 5)) {
-        timerText.classList.add('urgent');
+        timer.classList.add('urgent');
       }
 
       if (remainingRealMs <= 0) {
         clearInterval(timerInterval);
-        timerText.innerText = '';
+        timer.innerHTML = ''; // Убираем таймер полностью
         active = false;
         tapBtn.disabled = false;
       }
@@ -249,7 +279,7 @@
       tapArea.removeEventListener('touchstart', handleTap);
       tapArea.removeEventListener('click', handleTap);
       clearInterval(timerInterval);
-      timerText.innerText = '';
+      timer.innerHTML = '';
       active = false;
       tapBtn.disabled = false;
     }, realDuration);
