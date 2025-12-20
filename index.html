@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Лёгкий игровой шрифт -->
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&display=swap" rel="stylesheet">
+  <!-- Шрифт Rajdhani, но легче -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -38,44 +38,44 @@
       width: 100%;
     }
 
-    /* Таймер — легче, выше, без дёрганья */
+    /* Таймер — спокойный, без вибрации/дёрганья */
     #timer {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 56px; /* Меньше, чем был */
-      font-weight: 600;
-      margin-bottom: 60px; /* Сместили выше */
+      font-size: 58px;
+      font-weight: 500; /* Легче */
+      margin-bottom: 80px; /* Ещё выше */
       pointer-events: none;
       z-index: 10;
       color: #8fd3f4;
       background: linear-gradient(90deg, #8fd3f4, #84fab0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 15px rgba(143, 211, 244, 0.5);
-      animation: softBreathe 3s infinite ease-in-out;
-      letter-spacing: 6px;
-      width: 260px; /* Фиксированная ширина — нет дёрганья */
+      text-shadow: 0 0 12px rgba(143, 211, 244, 0.4); /* Мягче свечение */
+      animation: softBreathe 3.5s infinite ease-in-out; /* Только opacity */
+      letter-spacing: 8px;
+      width: 280px; /* Фикс ширины — нет сдвигов */
       text-align: center;
     }
 
     @keyframes softBreathe {
-      0% { opacity: 0.8; }
+      0% { opacity: 0.85; }
       50% { opacity: 1; }
-      100% { opacity: 0.8; }
+      100% { opacity: 0.85; }
     }
 
-    /* Розовый в конце + лёгкая вибрация */
+    /* Розовый в конце — только opacity, без translate/scale */
     #timer.urgent {
       background: linear-gradient(90deg, #ffb6c1, #ff69b4);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(255, 105, 180, 0.7);
-      animation: urgentGlow 0.6s infinite ease-in-out;
+      text-shadow: 0 0 18px rgba(255, 105, 180, 0.6);
+      animation: urgentBreathe 1s infinite ease-in-out;
     }
 
-    @keyframes urgentGlow {
-      0% { opacity: 0.9; transform: translateY(0); }
-      50% { opacity: 1; transform: translateY(-3px); }
-      100% { opacity: 0.9; transform: translateY(0); }
+    @keyframes urgentBreathe {
+      0% { opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { opacity: 0.9; }
     }
 
     .diamond {
