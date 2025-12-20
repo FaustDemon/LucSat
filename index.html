@@ -28,19 +28,21 @@
     .diamond-wrapper {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
       width: 100%;
     }
 
-    /* Таймер — скрыт по умолчанию */
+    /* Таймер поверх алмаза, по центру */
     #timer {
-      display: none; /* Скрыт до старта сессии */
+      display: none; /* Скрыт до старта */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -150%); /* Выше центра, над алмазом */
       justify-content: center;
       align-items: center;
-      margin-bottom: 80px;
       pointer-events: none;
       z-index: 10;
       font-family: 'Courier New', Courier, monospace;
@@ -186,7 +188,7 @@
   let active = false;
 
   const diamondsPerLevel = 100;
-  const realDuration = 8000;     // Реально 8 секунд
+  const realDuration = 6500;     // Реально 6.5 секунд
   const displayedDuration = 5000; // Показываем как 5 секунд
   let startTime = 0;
   let timerInterval = null;
@@ -206,7 +208,6 @@
     const remainingDisplayedMs = Math.max(displayedDuration - displayedElapsed, 0);
 
     const totalSeconds = Math.floor(remainingDisplayedMs / 1000);
-    // Точное округление, чтобы не было 100 на мгновение
     const hundredths = Math.min(99, Math.round((remainingDisplayedMs % 1000) / 10));
 
     timerSeconds.innerText = totalSeconds.toString().padStart(2, '0');
@@ -223,7 +224,7 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timer.classList.remove('urgent');
-    timer.style.display = 'flex'; // Показываем таймер
+    timer.style.display = 'flex'; // Показываем таймер поверх
     timerMinutes.innerText = '00';
     timerSeconds.innerText = '05';
     timerHundredths.innerText = '00';
@@ -242,14 +243,14 @@
 
       if (remainingRealMs <= 0) {
         clearInterval(timerInterval);
-        timer.style.display = 'none'; // Скрываем таймер
+        timer.style.display = 'none';
         active = false;
         tapBtn.disabled = false;
       }
     }, 30);
 
     const handleTap = (e) => {
-      if (!active) return; // Тапы только во время сессии
+      if (!active) return;
       e.preventDefault();
 
       const touches = e.touches ? e.touches.length : 1;
