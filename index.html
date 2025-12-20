@@ -2,8 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Diamond Tap</title>
+<title>Diamond Tap - Prototype</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -15,190 +16,48 @@
   --color-accent: #ff69b4;
   --color-button: #1f6bff;
   --color-disabled: #444;
-  --font-main: Arial, sans-serif;
+  --font-main: 'Helvetica Neue', Arial, sans-serif;
   --menu-height: 60px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family: var(--font-main); color:#fff; background:radial-gradient(circle at top, var(--color-bg-top), var(--color-bg-bottom)); display:flex; flex-direction:column; min-height:100vh; touch-action:none; }
 
-body {
-  font-family: var(--font-main);
-  color: #fff;
-  background: radial-gradient(circle at top, var(--color-bg-top), var(--color-bg-bottom));
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  touch-action: none;
-  position: relative;
-}
+.top { text-align:center; margin-top:20px; z-index:2; }
+#level { font-size:32px; font-weight:bold; margin-bottom:5px; }
 
-.top {
-  text-align: center;
-  margin-top: 20px;
-  z-index: 2;
-}
+.progress-container { width:80%; max-width:300px; margin:0 auto 10px; background:#222; border-radius:10px; overflow:hidden; }
+#progressBar { height:12px; width:0%; background:linear-gradient(90deg,var(--color-primary),var(--color-secondary)); transition: width 0.3s ease; }
+#progress { margin-top:6px; font-size:14px; }
 
-#level {
-  font-size: 32px;
-  font-weight: bold;
-}
+#timerContainer { position:absolute; top:150px; width:100%; text-align:center; display:none; pointer-events:none; z-index:3; }
+#timer { font-family:'Courier New', monospace; font-size:56px; font-weight:bold; color:var(--color-secondary); text-shadow:0 0 10px rgba(143,211,244,0.5); animation:softBreathe 4s infinite ease-in-out; }
+#timer.urgent { color:var(--color-accent); text-shadow:0 0 15px rgba(255,105,180,0.7); animation:urgentBreathe 1.2s infinite ease-in-out; }
+@keyframes softBreathe {0%,100%{opacity:0.9}50%{opacity:1}}
+@keyframes urgentBreathe {0%,100%{opacity:0.95}50%{opacity:1}}
 
-.progress-container {
-  width: 80%;
-  max-width: 300px;
-  margin: 15px auto 0;
-  background: #333;
-  border-radius: 10px;
-  overflow: hidden;
-}
+.section { display:none; flex:1; flex-direction:column; align-items:center; justify-content:flex-start; padding:20px; overflow:hidden; }
 
-#progressBar {
-  height: 12px;
-  width: 0%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-}
+.diamond-wrapper { flex:1; display:flex; justify-content:center; align-items:center; width:100%; }
+.diamond { width:120px; height:120px; background:linear-gradient(135deg,var(--color-secondary),var(--color-primary)); clip-path:polygon(50% 0%,90% 25%,100% 60%,50% 100%,0% 60%,10% 25%); animation:breathe 3.8s ease-in-out infinite; transform:scale(var(--hit-scale,1)); transition: transform 0.12s; }
+@keyframes breathe {0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 
-#progress {
-  margin-top: 8px;
-}
+.bottom { margin-bottom: calc(var(--menu-height)+10px); text-align:center; }
 
-#timerContainer {
-  position: absolute;
-  top: 154px;
-  width: 100%;
-  text-align: center;
-  display: none;
-  pointer-events: none;
-  z-index: 3;
-}
+button { padding:14px 28px; font-size:18px; border-radius:12px; border:none; background:var(--color-button); color:#fff; cursor:pointer; transition:transform 0.1s; }
+button:active { transform:scale(0.97);}
+button:disabled { background:var(--color-disabled); }
 
-#timer {
-  font-family: 'Courier New', monospace;
-  font-size: 56px;
-  font-weight: bold;
-  color: var(--color-secondary);
-  text-shadow: 0 0 10px rgba(143,211,244,0.5);
-  animation: softBreathe 4s infinite ease-in-out;
-}
+#menu { position:fixed; bottom:0; width:100%; height:var(--menu-height); display:flex; justify-content:space-around; align-items:center; background:rgba(0,0,0,0.8); z-index:10; }
+.menu-btn { background:transparent; border:none; color:#fff; font-size:16px; cursor:pointer; padding:10px; }
+.menu-btn.active { color:var(--color-secondary); font-weight:bold; }
 
-#timer.urgent {
-  color: var(--color-accent);
-  text-shadow: 0 0 15px rgba(255,105,180,0.7);
-  animation: urgentBreathe 1.2s infinite ease-in-out;
-}
+.card { background:#222; padding:15px; margin:10px 0; border-radius:12px; width:90%; max-width:350px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.5); }
 
-@keyframes softBreathe { 0%,100%{opacity:0.9} 50%{opacity:1} }
-@keyframes urgentBreathe { 0%,100%{opacity:0.95} 50%{opacity:1} }
-
-.diamond-wrapper {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 100%;
-}
-
-.diamond {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
-  clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
-  animation: breathe 3.8s ease-in-out infinite;
-  transform: scale(var(--hit-scale,1));
-  transition: transform 0.12s;
-}
-
-@keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
-
-.section {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px;
-}
-
-.card {
-  background: #333;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 350px;
-  text-align: center;
-}
-
-.card button { margin-top:10px; width:100%; }
-
-.bottom { margin-bottom: calc(var(--menu-height) + 10px); text-align:center; }
-
-button {
-  padding: 14px 28px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  background: var(--color-button);
-  color: #fff;
-  cursor: pointer;
-}
-
-button:disabled { background: var(--color-disabled); }
-
-#menu {
-  position: fixed;
-  bottom:0;
-  width:100%;
-  height: var(--menu-height);
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  background: rgba(0,0,0,0.8);
-  z-index: 10;
-}
-
-.menu-btn {
-  background:transparent;
-  border:none;
-  color:#fff;
-  font-size:16px;
-  cursor:pointer;
-  padding:10px;
-}
-
-.menu-btn.active {
-  color: var(--color-secondary);
-  font-weight:bold;
-}
-
-/* X Section */
-#xField {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  grid-auto-rows: 1fr;
-  gap:6px;
-  width:100%;
-  max-width:600px;
-  height:60vh;
-  margin:20px 0;
-}
-
-.xCell {
-  background: linear-gradient(135deg,#444,#222);
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:20px;
-  cursor:pointer;
-  transition: transform 0.15s;
-}
-.xCell:active { transform: scale(1.05); }
+#xField { display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:1fr; gap:8px; width:100%; max-width:600px; height:60vh; margin:20px 0; }
+.xCell { background:linear-gradient(135deg,#444,#222); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; transition: transform 0.15s, box-shadow 0.2s; }
+.xCell:hover { box-shadow:0 0 15px rgba(143,211,244,0.6); }
+.xCell:active { transform:scale(1.05); }
 
 </style>
 </head>
@@ -206,25 +65,17 @@ button:disabled { background: var(--color-disabled); }
 
 <!-- Top info -->
 <div class="top">
-  <div style="font-size:24px;margin-bottom:10px;">
-    <span id="totalDiamonds">0.000</span> 💎
-  </div>
+  <div style="font-size:24px;margin-bottom:6px;"><span id="totalDiamonds">0.000</span> 💎</div>
   <div id="level">LEVEL 1</div>
-  <div class="progress-container">
-    <div id="progressBar"></div>
-  </div>
+  <div class="progress-container"><div id="progressBar"></div></div>
   <div id="progress">0.000 / 100</div>
 </div>
 
-<div id="timerContainer">
-  <div id="timer">00:05:00</div>
-</div>
+<div id="timerContainer"><div id="timer">00:05:00</div></div>
 
 <!-- Sections -->
 <div id="tapSection" class="section">
-  <div class="diamond-wrapper">
-    <div id="diamond" class="diamond"></div>
-  </div>
+  <div class="diamond-wrapper"><div id="diamond" class="diamond"></div></div>
   <div class="bottom"><button id="tapBtn">TAP</button></div>
 </div>
 
@@ -236,7 +87,6 @@ button:disabled { background: var(--color-disabled); }
 <div id="xSection" class="section">
   <h2>X</h2>
   <div id="xField">
-    <!-- 24 пустых ячейки -->
     ${Array.from({length:24},(_,i)=>`<div class="xCell">${i+1}</div>`).join('')}
   </div>
   <div class="bottom"><button id="xAction">Действие X</button></div>
@@ -255,7 +105,7 @@ button:disabled { background: var(--color-disabled); }
   </div>
 </div>
 
-<!-- Bottom menu -->
+<!-- Menu -->
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">Тап</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
@@ -265,33 +115,35 @@ button:disabled { background: var(--color-disabled); }
 </div>
 
 <script>
+// === CONFIG & STATE ===
 const CONFIG = {tapValue:0.037, sessionDuration:5000, maxTouches:5, urgentThreshold:1000};
-const tapBtn = document.getElementById('tapBtn');
-const diamond = document.getElementById('diamond');
-const totalDiamondsText = document.getElementById('totalDiamonds');
-const levelText = document.getElementById('level');
-const progressText = document.getElementById('progress');
-const progressBar = document.getElementById('progressBar');
-const timerContainer = document.getElementById('timerContainer');
-const timer = document.getElementById('timer');
+const tapBtn=document.getElementById('tapBtn');
+const diamond=document.getElementById('diamond');
+const totalDiamondsText=document.getElementById('totalDiamonds');
+const levelText=document.getElementById('level');
+const progressText=document.getElementById('progress');
+const progressBar=document.getElementById('progressBar');
+const timerContainer=document.getElementById('timerContainer');
+const timer=document.getElementById('timer');
 
-let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds'))||0;
-let level = parseInt(localStorage.getItem('level'))||1;
-let progress = parseFloat(localStorage.getItem('progress'))||0;
+let totalDiamonds=parseFloat(localStorage.getItem('totalDiamonds'))||0;
+let level=parseInt(localStorage.getItem('level'))||1;
+let progress=parseFloat(localStorage.getItem('progress'))||0;
 let active=false, startTime=0, timerInterval=null;
 const activePointers=new Set(), diamondsPerLevel=100;
 
 function updateUI(){
-  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
-  levelText.innerText = `LEVEL ${level}`;
-  progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
-  progressBar.style.width = `${(progress/diamondsPerLevel)*100}%`;
+  totalDiamondsText.innerText=totalDiamonds.toFixed(3);
+  levelText.innerText=`LEVEL ${level}`;
+  progressText.innerText=`${progress.toFixed(3)} / ${diamondsPerLevel}`;
+  progressBar.style.width=`${(progress/diamondsPerLevel)*100}%`;
   localStorage.setItem('totalDiamonds',totalDiamonds);
   localStorage.setItem('level',level);
   localStorage.setItem('progress',progress);
 }
 updateUI();
 
+// Menu switch
 document.querySelectorAll('.menu-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(active) return;
@@ -302,6 +154,7 @@ document.querySelectorAll('.menu-btn').forEach(btn=>{
   });
 });
 
+// TAP SESSION
 function startSession(){
   if(active) return;
   active=true;
@@ -312,7 +165,6 @@ function startSession(){
   timerInterval=setInterval(updateTimer,50);
   activePointers.clear();
 }
-
 function endSession(){
   active=false;
   tapBtn.disabled=false;
@@ -321,7 +173,6 @@ function endSession(){
   diamond.style.setProperty('--hit-scale',1);
   clearInterval(timerInterval);
 }
-
 function updateTimer(){
   const remaining=Math.max(CONFIG.sessionDuration-(performance.now()-startTime),0);
   const s=Math.floor(remaining/1000);
@@ -330,7 +181,6 @@ function updateTimer(){
   if(remaining<=CONFIG.urgentThreshold) timer.classList.add('urgent');
   if(remaining<=0) endSession();
 }
-
 document.body.addEventListener('pointerdown',e=>{
   if(!active) return;
   e.preventDefault();
@@ -344,17 +194,17 @@ document.body.addEventListener('pointerdown',e=>{
     updateUI();
   }
 });
-
 document.body.addEventListener('pointerup',e=>{
   activePointers.delete(e.pointerId);
   const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
   diamond.style.setProperty('--hit-scale',1+effectiveTouches*0.06);
 });
-
 tapBtn.onclick=startSession;
 
-document.getElementById('xAction').onclick=()=>{ alert('Действие X будет доступно позже!'); };
+// Placeholder X
+document.getElementById('xAction').onclick=()=>alert('Действие X будет доступно позже!');
 
+// Telegram WebApp
 if(window.Telegram && Telegram.WebApp){
   const tg=Telegram.WebApp;
   tg.ready();
@@ -362,6 +212,7 @@ if(window.Telegram && Telegram.WebApp){
   tg.disableVerticalSwipes();
 }
 </script>
+
 </body>
 </html>
 
