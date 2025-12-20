@@ -25,10 +25,15 @@
       width: 100%;
     }
 
+    #level {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
     .progress-container {
       width: 80%;
       max-width: 300px;
-      margin: 15px auto 0 auto;
+      margin: 15px auto 0;
       background: #333;
       border-radius: 10px;
       overflow: hidden;
@@ -47,9 +52,30 @@
     }
 
     #timer {
-      font-family: monospace;
-      font-size: 56px;
+      font-family: 'Courier New', monospace;
+      font-size: 60px;
+      font-weight: bold;
       color: #8fd3f4;
+      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
+      animation: softBreathe 4s infinite ease-in-out;
+    }
+
+    #timer.urgent {
+      color: #ff69b4;
+      text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+      animation: urgentBreathe 1.2s infinite ease-in-out;
+    }
+
+    @keyframes softBreathe {
+      0% { opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { opacity: 0.9; }
+    }
+
+    @keyframes urgentBreathe {
+      0% { opacity: 0.95; }
+      50% { opacity: 1; }
+      100% { opacity: 0.95; }
     }
 
     .diamond-wrapper {
@@ -98,27 +124,30 @@
 
 <body>
 
-  <div class="top">
-    <div><span id="totalDiamonds">0.00</span> 💎</div>
-    <div id="level">LEVEL 1</div>
-    <div class="progress-container">
-      <div id="progressBar"></div>
-    </div>
-    <div id="progress">0.00 / 100</div>
+<div class="top">
+  <div style="font-size:24px;margin-bottom:10px;">
+    <span id="totalDiamonds">0.00</span> 💎
   </div>
+  <div id="level">LEVEL 1</div>
 
-  <div id="timerContainer">
-    <div id="timer">00:05:00</div>
+  <div class="progress-container">
+    <div id="progressBar"></div>
   </div>
+  <div id="progress">0.00 / 100</div>
+</div>
 
-  <div class="diamond-wrapper">
-    <div id="diamond" class="diamond"></div>
-    <div id="tapArea"></div>
-  </div>
+<div id="timerContainer">
+  <div id="timer">00:05:00</div>
+</div>
 
-  <div class="bottom">
-    <button id="tapBtn">TAP</button>
-  </div>
+<div class="diamond-wrapper">
+  <div id="diamond" class="diamond"></div>
+  <div id="tapArea"></div>
+</div>
+
+<div class="bottom">
+  <button id="tapBtn">TAP</button>
+</div>
 
 <script>
   const tapArea = document.getElementById('tapArea');
@@ -142,6 +171,7 @@
   const diamondsPerLevel = 100;
   const tapValue = 0.08;
   const sessionDuration = 5000;
+  const urgentThreshold = 1000;
   const maxPointers = 5;
 
   const activePointers = new Set();
@@ -155,10 +185,11 @@
 
   function startSession() {
     if (active) return;
-
     active = true;
+
     tapBtn.disabled = true;
     timerContainer.style.display = 'block';
+    timer.classList.remove('urgent');
 
     startTime = performance.now();
     timerInterval = setInterval(updateTimer, 30);
@@ -183,9 +214,14 @@
 
   function updateTimer() {
     const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
+
     const s = Math.floor(remaining / 1000);
     const ms = Math.floor((remaining % 1000) / 10);
     timer.innerText = `00:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
+
+    if (remaining <= urgentThreshold) {
+      timer.classList.add('urgent');
+    }
 
     if (remaining <= 0) endSession();
   }
@@ -205,8 +241,7 @@
       level++;
     }
 
-    const scale = Math.min(1.4, 1 + activePointers.size * 0.05);
-    diamond.style.transform = `scale(${scale})`;
+    diamond.style.transform = `scale(${Math.min(1.4, 1 + activePointers.size * 0.05)})`;
 
     updateUI();
   }
