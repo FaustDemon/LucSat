@@ -205,7 +205,7 @@ button:disabled {
   <div id="timer">00:05:00</div>
 </div>
 
-<!-- Секции идут до меню -->
+<!-- Секции -->
 <div id="tapSection" class="section">
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
@@ -233,6 +233,15 @@ button:disabled {
   </div>
 </div>
 
+<!-- Раздел X перед Фарм -->
+<div id="xSection" class="section">
+  <h2>X</h2>
+  <div class="card">
+    <p>Контент для раздела X</p>
+    <button id="xAction">Действие X</button>
+  </div>
+</div>
+
 <div id="farmSection" class="section">
   <h2>Фарм Кристаллов</h2>
   <div class="card">
@@ -245,16 +254,6 @@ button:disabled {
   <button id="duelCrystals">Дуэль (шанс на +10 💎)</button>
 </div>
 
-<!-- Раздел X между Фарм и Друзья -->
-<div id="xSection" class="section">
-  <h2>X</h2>
-  <div class="card">
-    <p>Контент для раздела X</p>
-    <button id="xAction">Действие X</button>
-  </div>
-</div>
-
-<!-- Раздел Друзья -->
 <div id="friendsSection" class="section">
   <h2>Друзья</h2>
   <div class="card">
@@ -267,8 +266,8 @@ button:disabled {
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">Тап</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
-  <button class="menu-btn" data-section="farmSection">Фарм</button>
   <button class="menu-btn" data-section="xSection">X</button>
+  <button class="menu-btn" data-section="farmSection">Фарм</button>
   <button class="menu-btn" data-section="friendsSection">Друзья</button>
 </div>
 
