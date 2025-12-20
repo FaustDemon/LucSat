@@ -205,5 +205,274 @@ button:disabled {
   <div id="timer">00:05:00</div>
 </div>
 
+<!-- Секции идут до меню -->
 <div id="tapSection" class="section">
-  <div class="diamon
+  <div class="diamond-wrapper">
+    <div id="diamond" class="diamond"></div>
+  </div>
+  <div class="bottom">
+    <button id="tapBtn">TAP</button>
+  </div>
+</div>
+
+<div id="upgradeSection" class="section">
+  <h2>Прокачка</h2>
+  <div class="card">
+    <h3>Кирка</h3>
+    <p>Уровень: <span id="pickaxeLevel">1</span></p>
+    <p>Эффект: +0.01 к тапу</p>
+    <p>Стоимость: <span id="pickaxeCost">10</span> 💎</p>
+    <button id="upgradePickaxe">Апгрейд</button>
+  </div>
+  <div class="card">
+    <h3>Лицензия на добычу</h3>
+    <p>Уровень: <span id="licenseLevel">1</span></p>
+    <p>Эффект: +0.001 пассив/сек</p>
+    <p>Стоимость: <span id="licenseCost">20</span> 💎</p>
+    <button id="upgradeLicense">Апгрейд</button>
+  </div>
+</div>
+
+<div id="farmSection" class="section">
+  <h2>Фарм Кристаллов</h2>
+  <div class="card">
+    <h3>Кристалл</h3>
+    <p>Уровень: <span id="crystalLevel">1</span></p>
+    <p>Пассивный доход: <span id="passiveIncome">0.001</span> / сек</p>
+    <button id="feedCrystal">Кормить (5 💎)</button>
+  </div>
+  <button id="mergeCrystals">Слить кристаллы (требует 2 уровня)</button>
+  <button id="duelCrystals">Дуэль (шанс на +10 💎)</button>
+</div>
+
+<!-- Новый раздел Друзья -->
+<div id="friendsSection" class="section">
+  <h2>Друзья</h2>
+  <div class="card">
+    <p>Здесь будут ваши друзья</p>
+    <button id="addFriend">Добавить друга</button>
+  </div>
+</div>
+
+<!-- Новый раздел X -->
+<div id="xSection" class="section">
+  <h2>X</h2>
+  <div class="card">
+    <p>Контент для раздела X</p>
+    <button id="xAction">Действие X</button>
+  </div>
+</div>
+
+<!-- Меню -->
+<div id="menu">
+  <button class="menu-btn active" data-section="tapSection">Тап</button>
+  <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
+  <button class="menu-btn" data-section="farmSection">Фарм</button>
+  <button class="menu-btn" data-section="friendsSection">Друзья</button>
+  <button class="menu-btn" data-section="xSection">X</button>
+</div>
+
+<script>
+const tapBtn = document.getElementById('tapBtn');
+const diamond = document.getElementById('diamond');
+const totalDiamondsText = document.getElementById('totalDiamonds');
+const levelText = document.getElementById('level');
+const progressText = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+const timerContainer = document.getElementById('timerContainer');
+const timer = document.getElementById('timer');
+
+let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
+let level = parseInt(localStorage.getItem('level')) || 1;
+let progress = parseFloat(localStorage.getItem('progress')) || 0;
+
+let pickaxeLevel = parseInt(localStorage.getItem('pickaxeLevel')) || 1;
+let licenseLevel = parseInt(localStorage.getItem('licenseLevel')) || 1;
+let crystalLevel = parseInt(localStorage.getItem('crystalLevel')) || 1;
+
+let passiveIncome = 0.001 * crystalLevel;
+
+const baseTapValue = 0.066;
+let tapValue = baseTapValue + (pickaxeLevel - 1) * 0.01;
+
+const diamondsPerLevel = 100;
+const sessionDuration = 5000;
+const urgentThreshold = 1000;
+const maxTouches = 5;
+
+let active = false;
+let startTime = 0;
+let timerInterval = null;
+const activePointers = new Set();
+
+function updateUI() {
+  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
+  levelText.innerText = `LEVEL ${level}`;
+  progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
+  progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
+
+  document.getElementById('pickaxeLevel').innerText = pickaxeLevel;
+  document.getElementById('pickaxeCost').innerText = (10 * pickaxeLevel).toFixed(3);
+
+  document.getElementById('licenseLevel').innerText = licenseLevel;
+  document.getElementById('licenseCost').innerText = (20 * licenseLevel).toFixed(3);
+
+  document.getElementById('crystalLevel').innerText = crystalLevel;
+  document.getElementById('passiveIncome').innerText = passiveIncome.toFixed(3);
+
+  localStorage.setItem('totalDiamonds', totalDiamonds);
+  localStorage.setItem('level', level);
+  localStorage.setItem('progress', progress);
+  localStorage.setItem('pickaxeLevel', pickaxeLevel);
+  localStorage.setItem('licenseLevel', licenseLevel);
+  localStorage.setItem('crystalLevel', crystalLevel);
+}
+
+updateUI();
+
+setInterval(() => {
+  if (!active) {
+    totalDiamonds += passiveIncome;
+    progress += passiveIncome;
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
+    updateUI();
+  }
+}, 1000);
+
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (active) return;
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+    const section = document.getElementById(btn.dataset.section);
+    section.style.display = 'flex';
+    btn.classList.add('active');
+  });
+});
+
+function startSession() {
+  if (active) return;
+  active = true;
+  tapBtn.disabled = true;
+  timerContainer.style.display = 'block';
+  timer.classList.remove('urgent');
+  startTime = performance.now();
+  timerInterval = setInterval(updateTimer, 30);
+  activePointers.clear();
+}
+
+function endSession() {
+  active = false;
+  tapBtn.disabled = false;
+  timerContainer.style.display = 'none';
+  activePointers.clear();
+  diamond.style.setProperty('--hit-scale', 1);
+  clearInterval(timerInterval);
+}
+
+function updateTimer() {
+  const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
+  const s = Math.floor(remaining / 1000);
+  const ms = Math.floor((remaining % 1000) / 10);
+
+  timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+
+  if (remaining <= urgentThreshold) timer.classList.add('urgent');
+  if (remaining <= 0) endSession();
+}
+
+document.body.addEventListener('pointerdown', (e) => {
+  if (!active) return;
+  e.preventDefault();
+  if (!activePointers.has(e.pointerId)) {
+    activePointers.add(e.pointerId);
+    const effectiveTouches = Math.min(activePointers.size, maxTouches);
+    const gain = tapValue * effectiveTouches;
+
+    totalDiamonds += gain;
+    progress += gain;
+
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
+
+    diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+    updateUI();
+  }
+});
+
+document.body.addEventListener('pointerup', (e) => {
+  activePointers.delete(e.pointerId);
+  const effectiveTouches = Math.min(activePointers.size, maxTouches);
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+});
+
+tapBtn.onclick = startSession;
+
+document.getElementById('upgradePickaxe').onclick = () => {
+  const cost = 10 * pickaxeLevel;
+  if (totalDiamonds >= cost && !active) {
+    totalDiamonds -= cost;
+    pickaxeLevel++;
+    tapValue = baseTapValue + (pickaxeLevel - 1) * 0.01;
+    updateUI();
+  }
+};
+
+document.getElementById('upgradeLicense').onclick = () => {
+  const cost = 20 * licenseLevel;
+  if (totalDiamonds >= cost && !active) {
+    totalDiamonds -= cost;
+    licenseLevel++;
+    passiveIncome += 0.001;
+    updateUI();
+  }
+};
+
+document.getElementById('feedCrystal').onclick = () => {
+  if (totalDiamonds >= 5 && !active) {
+    totalDiamonds -= 5;
+    crystalLevel++;
+    passiveIncome = 0.001 * crystalLevel;
+    updateUI();
+  }
+};
+
+document.getElementById('mergeCrystals').onclick = () => {
+  if (crystalLevel >= 2 && !active) {
+    crystalLevel++;
+    passiveIncome = 0.001 * crystalLevel;
+    updateUI();
+    alert('Кристаллы слиты! Уровень повышен');
+  } else if (!active) {
+    alert('Нужно минимум 2 уровня для слияния');
+  }
+};
+
+document.getElementById('duelCrystals').onclick = () => {
+  if (active) return;
+  const win = Math.random() > 0.5;
+  if (win) {
+    totalDiamonds += 10;
+    alert('Победа в дуэли! +10 💎');
+  } else {
+    alert('Поражение... Попробуй позже');
+  }
+  updateUI();
+};
+
+if (window.Telegram && Telegram.WebApp) {
+    const tg = Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    tg.disableVerticalSwipes();
+}
+</script>
+
+</body>
+</html>
+
