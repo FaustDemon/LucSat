@@ -5,7 +5,6 @@
 <title>Diamond Tap</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
 <style>
 body {
   margin: 0;
@@ -53,7 +52,7 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: calc(20px + 32px + 12px + 8px + 40px); /* адаптивно ниже прогресса */
+  top: 130px; /* ниже прогресс-бара */
   width: 100%;
   text-align: center;
   display: none;
@@ -78,9 +77,9 @@ body {
 }
 
 @keyframes softBreathe {
-  0% { opacity: 0.9; }
-  50% { opacity: 1; }
-  100% { opacity: 0.9; }
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
 }
 
 @keyframes urgentBreathe {
@@ -104,7 +103,7 @@ body {
   background: linear-gradient(135deg, #8fd3f4, #84fab0);
   clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
   animation: breathe 3.8s ease-in-out infinite;
-  transform: scale(var(--hit-scale, 1));
+  transform: scale(var(--hit-scale,1));
   transition: transform 0.12s, filter 0.12s;
 }
 
@@ -141,13 +140,11 @@ button:disabled {
 </head>
 
 <body>
-
 <div class="top">
   <div style="font-size:24px;margin-bottom:10px;">
     <span id="totalDiamonds">0.000</span> 💎
   </div>
   <div id="level">LEVEL 1</div>
-
   <div class="progress-container">
     <div id="progressBar"></div>
   </div>
@@ -198,14 +195,12 @@ function updateUI() {
   levelText.innerText = `LEVEL ${level}`;
   progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
   progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
-
-  // Сохраняем в localStorage
   localStorage.setItem('totalDiamonds', totalDiamonds);
   localStorage.setItem('level', level);
   localStorage.setItem('progress', progress);
 }
 
-// Пассивный доход (можно расширять потом)
+// Пассивный доход
 setInterval(() => {
   const passiveGain = 0.001;
   totalDiamonds += passiveGain;
@@ -225,7 +220,6 @@ function startSession() {
   timer.classList.remove('urgent');
   startTime = performance.now();
   timerInterval = setInterval(updateTimer, 30);
-
   tapArea.addEventListener('pointerdown', onPointerDown);
   tapArea.addEventListener('pointerup', onPointerUp);
   tapArea.addEventListener('pointercancel', onPointerUp);
@@ -246,47 +240,5 @@ function endSession() {
 function updateTimer() {
   const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
   const s = Math.floor(remaining / 1000);
-  const ms = Math.floor((remaining % 1000) / 10);
-  timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
-  if (remaining <= urgentThreshold) timer.classList.add('urgent');
-  if (remaining <= 0) endSession();
-}
-
-function onPointerDown(e) {
-  if (!active) return;
-  if (activePointers.size >= maxTouches) return;
-  activePointers.add(e.pointerId);
-  const effectiveTouches = Math.min(activePointers.size, maxTouches);
-
-  // Начисляем только по одному тапу за событие
-  totalDiamonds += tapValue;
-  progress += tapValue;
-  if (progress >= diamondsPerLevel) {
-    progress -= diamondsPerLevel;
-    level++;
-  }
-
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-  updateUI();
-}
-
-function onPointerUp(e) {
-  activePointers.delete(e.pointerId);
-  const effectiveTouches = Math.min(activePointers.size, maxTouches);
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-}
-
-tapBtn.onclick = startSession;
-
-// Telegram WebApp
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
-tg.disableVerticalSwipes();
-
-updateUI();
-</script>
-
-</body>
-</html>
+  const ms = Math.floor((remaining % 1000) / 1
 
