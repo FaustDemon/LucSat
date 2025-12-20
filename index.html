@@ -52,7 +52,7 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 220px;
+  top: 154px; /* исправлено */
   width: 100%;
   text-align: center;
   display: none;
@@ -245,16 +245,7 @@ button:disabled {
   <button id="duelCrystals">Дуэль (шанс на +10 💎)</button>
 </div>
 
-<!-- Новый раздел Друзья -->
-<div id="friendsSection" class="section">
-  <h2>Друзья</h2>
-  <div class="card">
-    <p>Здесь будут ваши друзья</p>
-    <button id="addFriend">Добавить друга</button>
-  </div>
-</div>
-
-<!-- Новый раздел X -->
+<!-- Раздел X между Фарм и Друзья -->
 <div id="xSection" class="section">
   <h2>X</h2>
   <div class="card">
@@ -263,13 +254,22 @@ button:disabled {
   </div>
 </div>
 
+<!-- Раздел Друзья -->
+<div id="friendsSection" class="section">
+  <h2>Друзья</h2>
+  <div class="card">
+    <p>Здесь будут ваши друзья</p>
+    <button id="addFriend">Добавить друга</button>
+  </div>
+</div>
+
 <!-- Меню -->
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">Тап</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
   <button class="menu-btn" data-section="farmSection">Фарм</button>
-  <button class="menu-btn" data-section="friendsSection">Друзья</button>
   <button class="menu-btn" data-section="xSection">X</button>
+  <button class="menu-btn" data-section="friendsSection">Друзья</button>
 </div>
 
 <script>
