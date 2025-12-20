@@ -107,7 +107,82 @@
   const progressBar = document.getElementById('progressBar');
   const timerText = document.getElementById('timer');
 
-  // Переменные состояния
+  // Переменные состояния (ВАЖНО: active теперь здесь)
   let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
   let level = parseInt(localStorage.getItem('level')) || 1;
-  let progress = parseInt(localStorage.getItem
+  let progress = parseInt(localStorage.getItem('progress')) || 0;
+  let active = false;  // ← Эта строка была потеряна, теперь вернул
+  let timeLeft = 0;
+
+  const diamondsPerLevel = 100;
+
+  function updateUI() {
+    totalDiamondsText.innerText = totalDiamonds.toLocaleString();
+    levelText.innerText = `LEVEL ${level}`;
+    progressText.innerText = `${progress} / ${diamondsPerLevel}`;
+    progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
+  }
+
+  updateUI();
+
+  tapBtn.onclick = () => {
+    if (active) return;
+
+    active = true;
+    tapBtn.disabled = true;
+    let tapsInSession = 0;
+    timeLeft = 5;
+
+    timerText.innerText = '5 сек';
+
+    diamond.style.transform = 'scale(1)';
+    diamond.style.filter = 'brightness(1)';
+
+    const sessionTimer = setInterval(() => {
+      timeLeft--;
+      timerText.innerText = timeLeft > 0 ? timeLeft + ' сек' : '';
+
+      if (timeLeft <= 0) {
+        clearInterval(sessionTimer);
+        active = false;
+        tapBtn.disabled = false;
+        timerText.innerText = '';
+      }
+    }, 1000);
+
+    const tapListener = () => {
+      if (!active) return;
+
+      tapsInSession++;
+      totalDiamonds++;
+      progress++;
+
+      if (progress >= diamondsPerLevel) {
+        progress = 0;
+        level++;
+      }
+
+      diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
+      diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
+
+      updateUI();
+
+      localStorage.setItem('totalDiamonds', totalDiamonds);
+      localStorage.setItem('level', level);
+      localStorage.setItem('progress', progress);
+    };
+
+    diamond.addEventListener('click', tapListener);
+
+    setTimeout(() => {
+      diamond.removeEventListener('click', tapListener);
+    }, 5000);
+  };
+
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+</script>
+
+</body>
+</html>
