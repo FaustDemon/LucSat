@@ -59,8 +59,7 @@
       font-weight: bold;
       animation: softBreathe 4s infinite ease-in-out;
       margin: 0 auto;
-      color: #8fd3f4;
-      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
+      color: #8fd3f4; /* Чистый цвет, без свечения */
     }
 
     @keyframes softBreathe {
@@ -70,8 +69,7 @@
     }
 
     #timer.urgent {
-      color: #ff69b4;
-      text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+      color: #ff69b4; /* Чистый розовый в конце */
       animation: urgentBreathe 1.2s infinite ease-in-out;
     }
 
@@ -186,7 +184,7 @@
   let active = false;
 
   const diamondsPerLevel = 100;
-  const realDuration = 5500;     // Реально 5.5 секунд (быстрее!)
+  const realDuration = 5500;     // Реально 5.5 секунд
   const displayedDuration = 5000; // Показываем как 5 секунд
   let startTime = 0;
   let timerInterval = null;
