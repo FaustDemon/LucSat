@@ -16,7 +16,6 @@ body {
   flex-direction: column;
   height: 100vh;
   touch-action: none;
-  position: relative;
 }
 
 .top {
@@ -26,10 +25,7 @@ body {
   z-index: 2;
 }
 
-#level {
-  font-size: 32px;
-  font-weight: bold;
-}
+#level { font-size: 32px; font-weight: bold; }
 
 .progress-container {
   width: 80%;
@@ -46,9 +42,7 @@ body {
   width: 0%;
 }
 
-#progress {
-  margin-top: 8px;
-}
+#progress { margin-top: 8px; }
 
 #timerContainer {
   position: absolute;
@@ -57,43 +51,27 @@ body {
   text-align: center;
   display: none;
   pointer-events: none;
-  z-index: 3;
 }
 
 #timer {
-  font-family: 'Courier New', monospace;
   font-size: 56px;
   font-weight: bold;
   color: #8fd3f4;
-  text-shadow: 0 0 10px rgba(143,211,244,0.5);
-  animation: softBreathe 4s infinite ease-in-out;
 }
 
-#timer.urgent {
-  color: #ff69b4;
-  text-shadow: 0 0 15px rgba(255,105,180,0.7);
-  animation: urgentBreathe 1.2s infinite ease-in-out;
+.section {
+  display: none;
+  flex: 1;
+  padding: 20px;
 }
 
-@keyframes softBreathe {
-  0% { opacity: 0.9; }
-  50% { opacity: 1; }
-  100% { opacity: 0.9; }
-}
-
-@keyframes urgentBreathe {
-  0% { opacity: 0.95; }
-  50% { opacity: 1; }
-  100% { opacity: 0.95; }
-}
+#tapSection { display: flex; flex-direction: column; }
 
 .diamond-wrapper {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  width: 100%;
 }
 
 .diamond {
@@ -101,88 +79,59 @@ body {
   height: 120px;
   background: linear-gradient(135deg, #8fd3f4, #84fab0);
   clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
-  animation: breathe 3.8s ease-in-out infinite;
-  transform: scale(var(--hit-scale, 1));
-  transition: transform 0.12s;
 }
 
-@keyframes breathe {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.04); }
-  100% { transform: scale(1); }
-}
-
-.bottom {
-  margin-bottom: 80px;
-  text-align: center;
-}
+.bottom { text-align: center; margin-bottom: 80px; }
 
 button {
   padding: 14px 28px;
-  font-size: 18px;
   border-radius: 12px;
   border: none;
   background: #1f6bff;
   color: #fff;
 }
 
-button:disabled {
-  background: #444;
-}
-
-/* Нижнее меню */
 #menu {
   position: fixed;
   bottom: 0;
   width: 100%;
   display: flex;
   justify-content: space-around;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   padding: 10px 0;
-  z-index: 10;
 }
 
 .menu-btn {
-  background: transparent;
+  background: none;
   border: none;
   color: #fff;
   font-size: 16px;
-  cursor: pointer;
-  padding: 10px;
 }
 
-.menu-btn.active {
-  color: #8fd3f4;
-  font-weight: bold;
+.menu-btn.active { color: #8fd3f4; font-weight: bold; }
+
+/* X section */
+.merge-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 64px);
+  gap: 8px;
+  justify-content: center;
 }
 
-/* Разделы */
-.section {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-#tapSection {
+.merge-cell {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #555;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  cursor: pointer;
 }
 
-.card {
-  background: #333;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 350px;
-}
-
-.card button {
-  margin-top: 10px;
-  width: 100%;
+.merge-cell.locked {
+  background: #111;
+  cursor: not-allowed;
 }
 </style>
 </head>
@@ -190,196 +139,107 @@ button:disabled {
 <body>
 
 <div class="top">
-  <div style="font-size:24px;margin-bottom:10px;">
-    <span id="totalDiamonds">0.000</span> 💎
-  </div>
+  <div><span id="totalDiamonds">0.000</span> 💎</div>
   <div id="level">LEVEL 1</div>
-
-  <div class="progress-container">
-    <div id="progressBar"></div>
-  </div>
-  <div id="progress">0.000 / 100</div>
+  <div class="progress-container"><div id="progressBar"></div></div>
+  <div id="progress">0 / 100</div>
 </div>
 
-<div id="timerContainer">
-  <div id="timer">00:05:00</div>
-</div>
+<div id="timerContainer"><div id="timer">00:05:00</div></div>
 
-<!-- Секции -->
 <div id="tapSection" class="section">
-  <div class="diamond-wrapper">
-    <div id="diamond" class="diamond"></div>
-  </div>
-  <div class="bottom">
-    <button id="tapBtn">TAP</button>
-  </div>
+  <div class="diamond-wrapper"><div id="diamond" class="diamond"></div></div>
+  <div class="bottom"><button id="tapBtn">TAP</button></div>
 </div>
 
-<!-- Прокачка: coming soon -->
-<div id="upgradeSection" class="section">
-  <h2>Прокачка</h2>
-  <div class="card">
-    <p>Coming Soon</p>
-  </div>
-</div>
+<div id="upgradeSection" class="section"><h2>Прокачка</h2><p>Coming soon</p></div>
 
-<!-- Раздел X -->
+<!-- X SECTION -->
 <div id="xSection" class="section">
-  <h2>X</h2>
-  <div class="card">
-    <p>Контент для раздела X</p>
-    <button id="xAction">Действие X</button>
-  </div>
+  <h2>X — Merge</h2>
+  <div id="energyX">Энергия: 30/30</div>
+  <div class="merge-grid" id="mergeGrid"></div>
+  <button id="dropX">Дроп (-5)</button>
+  <button id="sellX">Продать</button>
 </div>
 
-<!-- Фарм: coming soon -->
-<div id="farmSection" class="section">
-  <h2>Фарм Кристаллов</h2>
-  <div class="card">
-    <p>Coming Soon</p>
-  </div>
-</div>
+<div id="farmSection" class="section"><h2>Фарм</h2><p>Coming soon</p></div>
 
-<!-- Друзья -->
-<div id="friendsSection" class="section">
-  <h2>Друзья</h2>
-  <div class="card">
-    <p>Здесь будут ваши друзья</p>
-    <button id="addFriend">Добавить друга</button>
-  </div>
-</div>
-
-<!-- Меню -->
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">Тап</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
   <button class="menu-btn" data-section="xSection">X</button>
   <button class="menu-btn" data-section="farmSection">Фарм</button>
-  <button class="menu-btn" data-section="friendsSection">Друзья</button>
 </div>
 
 <script>
-const CONFIG = {
-  tapValue: 0.037,        // Алмазы за один TAP
-  sessionDuration: 5000,  // Длительность сессии TAP в миллисекундах
-  maxTouches: 5,          // Максимальное количество касаний, учитываемое для бонуса
-  urgentThreshold: 1000   // Время до конца сессии, когда таймер становится "urgent"
-};
-
-const tapBtn = document.getElementById('tapBtn');
-const diamond = document.getElementById('diamond');
-const totalDiamondsText = document.getElementById('totalDiamonds');
-const levelText = document.getElementById('level');
-const progressText = document.getElementById('progress');
-const progressBar = document.getElementById('progressBar');
-const timerContainer = document.getElementById('timerContainer');
-const timer = document.getElementById('timer');
-
-let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
-let level = parseInt(localStorage.getItem('level')) || 1;
-let progress = parseFloat(localStorage.getItem('progress')) || 0;
-
-const diamondsPerLevel = 100;
-
-let active = false;
-let startTime = 0;
-let timerInterval = null;
-const activePointers = new Set();
-
-function updateUI() {
-  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
-  levelText.innerText = `LEVEL ${level}`;
-  progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
-  progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
-
-  localStorage.setItem('totalDiamonds', totalDiamonds);
-  localStorage.setItem('level', level);
-  localStorage.setItem('progress', progress);
-}
-
-updateUI();
-
-document.querySelectorAll('.menu-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (active) return;
-    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-    const section = document.getElementById(btn.dataset.section);
-    section.style.display = 'flex';
+/* ====== МЕНЮ ====== */
+document.querySelectorAll('.menu-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
     btn.classList.add('active');
-  });
-});
-
-function startSession() {
-  if (active) return;
-  active = true;
-  tapBtn.disabled = true;
-  timerContainer.style.display = 'block';
-  timer.classList.remove('urgent');
-  startTime = performance.now();
-  timerInterval = setInterval(updateTimer, 50); // обновление каждые 50ms
-  activePointers.clear();
-}
-
-function endSession() {
-  active = false;
-  tapBtn.disabled = false;
-  timerContainer.style.display = 'none';
-  activePointers.clear();
-  diamond.style.setProperty('--hit-scale', 1);
-  clearInterval(timerInterval);
-}
-
-function updateTimer() {
-  const remaining = Math.max(CONFIG.sessionDuration - (performance.now() - startTime), 0);
-  const s = Math.floor(remaining / 1000);
-  const ms = Math.floor((remaining % 1000) / 10);
-  timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
-  if (remaining <= CONFIG.urgentThreshold) timer.classList.add('urgent');
-  if (remaining <= 0) endSession();
-}
-
-document.body.addEventListener('pointerdown', (e) => {
-  if (!active) return;
-  e.preventDefault();
-  if (!activePointers.has(e.pointerId)) {
-    activePointers.add(e.pointerId);
-    const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
-    const gain = CONFIG.tapValue * effectiveTouches;
-
-    totalDiamonds += gain;
-    progress += gain;
-
-    if (progress >= diamondsPerLevel) {
-      progress -= diamondsPerLevel;
-      level++;
-    }
-
-    diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-    updateUI();
+    document.getElementById(btn.dataset.section).style.display='flex';
   }
 });
+document.getElementById('tapSection').style.display='flex';
 
-document.body.addEventListener('pointerup', (e) => {
-  activePointers.delete(e.pointerId);
-  const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-});
+/* ====== X MERGE LOGIC ====== */
+const grid=document.getElementById('mergeGrid');
+const energyText=document.getElementById('energyX');
+let energy=30,maxEnergy=30;
+let cells=[],selected=null;
 
-tapBtn.onclick = startSession;
+for(let i=0;i<24;i++){
+  const c=document.createElement('div');
+  c.className='merge-cell'+(i>=12?' locked':'');
+  c.dataset.level=0;
+  c.dataset.locked=i>=12;
+  grid.appendChild(c);
+  cells.push(c);
 
-// Placeholder для X-раздела
-document.getElementById('xAction').onclick = () => {
-  alert('Действие X будет доступно позже!');
+  c.onclick=()=>{
+    if(c.dataset.locked==='true'||c.dataset.level==0)return;
+    if(!selected){selected=c;c.style.border='2px solid #8fd3f4';}
+    else if(selected!==c&&selected.dataset.level===c.dataset.level){
+      c.dataset.level++;
+      selected.dataset.level=0;
+      selected.style.border='1px solid #555';
+      selected=null;
+      updateGrid();
+    }
+  };
+}
+
+function updateGrid(){
+  cells.forEach(c=>{
+    c.textContent=c.dataset.level>0?c.dataset.level:'';
+  });
+  energyText.textContent=`Энергия: ${energy}/${maxEnergy}`;
+}
+
+document.getElementById('dropX').onclick=()=>{
+  if(energy<5)return;
+  const empty=cells.filter(c=>c.dataset.level==0&&c.dataset.locked==='false');
+  if(!empty.length)return;
+  energy-=5;
+  empty[Math.floor(Math.random()*empty.length)].dataset.level=1;
+  updateGrid();
 };
 
-// Telegram WebApp
-if (window.Telegram && Telegram.WebApp) {
-    const tg = Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    tg.disableVerticalSwipes();
-}
+document.getElementById('sellX').onclick=()=>{
+  if(!selected)return;
+  energy+=Number(selected.dataset.level);
+  selected.dataset.level=0;
+  selected.style.border='1px solid #555';
+  selected=null;
+  updateGrid();
+};
+
+updateGrid();
+
+const tg=window.Telegram.WebApp;
+tg.ready();tg.expand();
 </script>
 
 </body>
