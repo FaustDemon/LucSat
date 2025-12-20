@@ -45,7 +45,6 @@
       margin-top: 10px;
     }
 
-    /* Таймер контейнер — центр */
     #timerContainer {
       display: none;
       width: 100%;
@@ -54,29 +53,15 @@
     }
 
     #timer {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
+      display: inline-block;
       font-family: 'Courier New', Courier, monospace;
       font-size: 60px;
       font-weight: bold;
       animation: softBreathe 4s infinite ease-in-out;
       margin: 0 auto;
-    }
-
-    .timer-part {
-      width: 60px;
-      text-align: center;
-    }
-
-    .timer-colon {
-      width: 20px;
-      text-align: center;
-    }
-
-    #timer span {
       color: #8fd3f4;
       text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
+      margin-left: -8px; /* Компенсация сдвига от свечения — теперь ровно по центру */
     }
 
     @keyframes softBreathe {
@@ -85,12 +70,9 @@
       100% { opacity: 0.9; }
     }
 
-    #timer.urgent span {
+    #timer.urgent {
       color: #ff69b4;
       text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
-    }
-
-    #timer.urgent {
       animation: urgentBreathe 1.2s infinite ease-in-out;
     }
 
@@ -170,13 +152,7 @@
   </div>
 
   <div id="timerContainer">
-    <div id="timer">
-      <span class="timer-part" id="timerMinutes">00</span>
-      <span class="timer-colon">:</span>
-      <span class="timer-part" id="timerSeconds">05</span>
-      <span class="timer-colon">:</span>
-      <span class="timer-part" id="timerHundredths">00</span>
-    </div>
+    <div id="timer">00:05:00</div>
   </div>
 
   <div class="diamond-wrapper">
@@ -204,9 +180,6 @@
   const progressBar = document.getElementById('progressBar');
   const timerContainer = document.getElementById('timerContainer');
   const timer = document.getElementById('timer');
-  const timerMinutes = document.getElementById('timerMinutes');
-  const timerSeconds = document.getElementById('timerSeconds');
-  const timerHundredths = document.getElementById('timerHundredths');
 
   let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
   let level = parseInt(localStorage.getItem('level')) || 1;
@@ -236,8 +209,7 @@
     const totalSeconds = Math.floor(remainingDisplayedMs / 1000);
     const hundredths = Math.min(99, Math.round((remainingDisplayedMs % 1000) / 10));
 
-    timerSeconds.innerText = totalSeconds.toString().padStart(2, '0');
-    timerHundredths.innerText = hundredths.toString().padStart(2, '0');
+    timer.innerText = `00:${totalSeconds.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
   }
 
   function startSession() {
@@ -251,9 +223,7 @@
     diamond.style.filter = 'brightness(1)';
     timer.classList.remove('urgent');
     timerContainer.style.display = 'block';
-    timerMinutes.innerText = '00';
-    timerSeconds.innerText = '05';
-    timerHundredths.innerText = '00';
+    timer.innerText = '00:05:00';
 
     startTime = performance.now();
 
