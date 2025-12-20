@@ -1,133 +1,141 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Diamond Tap Prototype</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="UTF-8">
+<title>Diamond Tap</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top, #0b0f1a, #000);
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      touch-action: none;
-      position: relative;
-    }
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #0b0f1a, #000);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  touch-action: none;
+  position: relative;
+}
 
-    .top {
-      margin-top: 20px;
-      text-align: center;
-      width: 100%;
-      z-index: 2;
-    }
+.top {
+  margin-top: 20px;
+  text-align: center;
+  width: 100%;
+  z-index: 2;
+}
 
-    #level {
-      font-size: 32px;
-      font-weight: bold;
-    }
+#level {
+  font-size: 32px;
+  font-weight: bold;
+}
 
-    .progress-container {
-      width: 80%;
-      max-width: 300px;
-      margin: 15px auto 0;
-      background: #333;
-      border-radius: 10px;
-      overflow: hidden;
-    }
+.progress-container {
+  width: 80%;
+  max-width: 300px;
+  margin: 15px auto 0;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+}
 
-    #progressBar {
-      height: 12px;
-      background: linear-gradient(90deg, #84fab0, #8fd3f4);
-      width: 0%;
-    }
+#progressBar {
+  height: 12px;
+  background: linear-gradient(90deg, #84fab0, #8fd3f4);
+  width: 0%;
+}
 
-    /* ⏱ Таймер ниже прогресса, но вне потока */
-    #timerContainer {
-      position: absolute;
-      top: calc(140px + 4vh);
-      width: 100%;
-      text-align: center;
-      display: none;
-      z-index: 3;
-      pointer-events: none;
-    }
+#progress {
+  margin-top: 8px;
+}
 
-    #timer {
-      font-family: 'Courier New', monospace;
-      font-size: 60px;
-      font-weight: bold;
-      color: #8fd3f4;
-      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
-      animation: softBreathe 4s infinite ease-in-out;
-    }
+#timerContainer {
+  position: absolute;
+  top: 200px; /* ниже прогресса */
+  width: 100%;
+  text-align: center;
+  display: none;
+  pointer-events: none;
+  z-index: 3;
+}
 
-    #timer.urgent {
-      color: #ff69b4;
-      text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
-      animation: urgentBreathe 1.2s infinite ease-in-out;
-    }
+#timer {
+  font-family: 'Courier New', monospace;
+  font-size: 56px;
+  font-weight: bold;
+  color: #8fd3f4;
+  text-shadow: 0 0 10px rgba(143,211,244,0.5);
+  animation: softBreathe 4s infinite ease-in-out;
+}
 
-    @keyframes softBreathe {
-      0% { opacity: 0.9; }
-      50% { opacity: 1; }
-      100% { opacity: 0.9; }
-    }
+#timer.urgent {
+  color: #ff69b4;
+  text-shadow: 0 0 15px rgba(255,105,180,0.7);
+  animation: urgentBreathe 1.2s infinite ease-in-out;
+}
 
-    @keyframes urgentBreathe {
-      0% { opacity: 0.95; }
-      50% { opacity: 1; }
-      100% { opacity: 0.95; }
-    }
+@keyframes softBreathe {
+  0% { opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { opacity: 0.9; }
+}
 
-    .diamond-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      width: 100%;
-      z-index: 1;
-    }
+@keyframes urgentBreathe {
+  0% { opacity: 0.95; }
+  50% { opacity: 1; }
+  100% { opacity: 0.95; }
+}
 
-    .diamond {
-      width: 120px;
-      height: 120px;
-      background: linear-gradient(135deg, #8fd3f4, #84fab0);
-      clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
-      transition: transform 0.1s, filter 0.1s;
-      z-index: 2;
-    }
+.diamond-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
 
-    #tapArea {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-    }
+.diamond {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #8fd3f4, #84fab0);
+  clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
+  animation: breathe 3.8s ease-in-out infinite;
+  transform: scale(var(--hit-scale, 1));
+  transition: filter 0.12s;
+}
 
-    .bottom {
-      margin-bottom: 30px;
-      z-index: 2;
-    }
+@keyframes breathe {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
 
-    button {
-      padding: 14px 28px;
-      font-size: 18px;
-      border-radius: 12px;
-      border: none;
-      background: #1f6bff;
-      color: #fff;
-    }
+#tapArea {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
 
-    button:disabled {
-      background: #444;
-    }
-  </style>
+.bottom {
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 14px 28px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  background: #1f6bff;
+  color: #fff;
+}
+
+button:disabled {
+  background: #444;
+}
+</style>
 </head>
 
 <body>
@@ -158,120 +166,112 @@
 </div>
 
 <script>
-  const tapArea = document.getElementById('tapArea');
-  const tapBtn = document.getElementById('tapBtn');
-  const diamond = document.getElementById('diamond');
-  const totalDiamondsText = document.getElementById('totalDiamonds');
-  const levelText = document.getElementById('level');
-  const progressText = document.getElementById('progress');
-  const progressBar = document.getElementById('progressBar');
-  const timerContainer = document.getElementById('timerContainer');
-  const timer = document.getElementById('timer');
+const tapArea = document.getElementById('tapArea');
+const tapBtn = document.getElementById('tapBtn');
+const diamond = document.getElementById('diamond');
+const totalDiamondsText = document.getElementById('totalDiamonds');
+const levelText = document.getElementById('level');
+const progressText = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+const timerContainer = document.getElementById('timerContainer');
+const timer = document.getElementById('timer');
 
-  let totalDiamonds = 0;
-  let level = 1;
-  let progress = 0;
+let totalDiamonds = 0;
+let level = 1;
+let progress = 0;
 
-  let active = false;
-  let startTime = 0;
-  let timerInterval = null;
+const tapValue = 0.066;
+const diamondsPerLevel = 100;
+const sessionDuration = 5000;
+const urgentThreshold = 1000;
+const maxTouches = 5;
 
-  const diamondsPerLevel = 100;
-  const tapValue = 0.066;
-  const sessionDuration = 5000;
-  const urgentThreshold = 1000;
-  const maxPointers = 5;
+let active = false;
+let startTime = 0;
+let timerInterval = null;
+const activePointers = new Set();
 
-  const activePointers = new Set();
-  let lastEffectiveTouches = 0;
+function updateUI() {
+  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
+  levelText.innerText = `LEVEL ${level}`;
+  progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
+  progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
+}
 
-  function updateUI() {
-    totalDiamondsText.innerText = totalDiamonds.toFixed(3);
-    levelText.innerText = `LEVEL ${level}`;
-    progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
-    progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
+function startSession() {
+  if (active) return;
+  active = true;
+
+  tapBtn.disabled = true;
+  timerContainer.style.display = 'block';
+  timer.classList.remove('urgent');
+
+  startTime = performance.now();
+  timerInterval = setInterval(updateTimer, 30);
+
+  tapArea.addEventListener('pointerdown', onPointerDown);
+  tapArea.addEventListener('pointerup', onPointerUp);
+  tapArea.addEventListener('pointercancel', onPointerUp);
+}
+
+function endSession() {
+  active = false;
+  tapBtn.disabled = false;
+  timerContainer.style.display = 'none';
+  activePointers.clear();
+  diamond.style.setProperty('--hit-scale', 1);
+
+  clearInterval(timerInterval);
+
+  tapArea.removeEventListener('pointerdown', onPointerDown);
+  tapArea.removeEventListener('pointerup', onPointerUp);
+  tapArea.removeEventListener('pointercancel', onPointerUp);
+}
+
+function updateTimer() {
+  const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
+  const s = Math.floor(remaining / 1000);
+  const ms = Math.floor((remaining % 1000) / 10);
+
+  timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+
+  if (remaining <= urgentThreshold) timer.classList.add('urgent');
+  if (remaining <= 0) endSession();
+}
+
+function onPointerDown(e) {
+  if (!active) return;
+  if (activePointers.size >= maxTouches) return;
+
+  activePointers.add(e.pointerId);
+
+  const effectiveTouches = Math.min(activePointers.size, maxTouches);
+  const gain = tapValue;
+
+  totalDiamonds += gain;
+  progress += gain;
+
+  if (progress >= diamondsPerLevel) {
+    progress -= diamondsPerLevel;
+    level++;
   }
 
-  function startSession() {
-    if (active) return;
-    active = true;
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+  updateUI();
+}
 
-    tapBtn.disabled = true;
-    timerContainer.style.display = 'block';
-    timer.classList.remove('urgent');
+function onPointerUp(e) {
+  activePointers.delete(e.pointerId);
+  const effectiveTouches = Math.min(activePointers.size, maxTouches);
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+}
 
-    activePointers.clear();
-    lastEffectiveTouches = 0;
+tapBtn.onclick = startSession;
 
-    startTime = performance.now();
-    timerInterval = setInterval(updateTimer, 30);
-
-    tapArea.addEventListener('pointerdown', onPointerDown);
-    tapArea.addEventListener('pointerup', onPointerUp);
-    tapArea.addEventListener('pointercancel', onPointerUp);
-  }
-
-  function endSession() {
-    active = false;
-    tapBtn.disabled = false;
-    timerContainer.style.display = 'none';
-    activePointers.clear();
-
-    clearInterval(timerInterval);
-
-    tapArea.removeEventListener('pointerdown', onPointerDown);
-    tapArea.removeEventListener('pointerup', onPointerUp);
-    tapArea.removeEventListener('pointercancel', onPointerUp);
-  }
-
-  function updateTimer() {
-    const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
-
-    const s = Math.floor(remaining / 1000);
-    const ms = Math.floor((remaining % 1000) / 10);
-    timer.innerText = `00:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
-
-    if (remaining <= urgentThreshold) timer.classList.add('urgent');
-    if (remaining <= 0) endSession();
-  }
-
-  function onPointerDown(e) {
-    if (!active) return;
-
-    activePointers.add(e.pointerId);
-
-    const effectiveTouches = Math.min(activePointers.size, maxPointers);
-
-    if (effectiveTouches > lastEffectiveTouches) {
-      const gained = (effectiveTouches - lastEffectiveTouches) * tapValue;
-
-      totalDiamonds += gained;
-      progress += gained;
-
-      if (progress >= diamondsPerLevel) {
-        progress -= diamondsPerLevel;
-        level++;
-      }
-
-      diamond.style.transform =
-        `scale(${Math.min(1.4, 1 + effectiveTouches * 0.05)})`;
-
-      lastEffectiveTouches = effectiveTouches;
-      updateUI();
-    }
-  }
-
-  function onPointerUp(e) {
-    activePointers.delete(e.pointerId);
-    lastEffectiveTouches = Math.min(activePointers.size, maxPointers);
-  }
-
-  tapBtn.onclick = startSession;
-
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
-  tg.disableVerticalSwipes();
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+tg.disableVerticalSwipes();
 </script>
 
 </body>
