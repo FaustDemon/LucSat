@@ -64,6 +64,13 @@
     button:disabled {
       background: #444;
     }
+
+    #timer {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #ff4444;
+    }
   </style>
 </head>
 <body>
@@ -91,7 +98,7 @@
   </div>
 
 <script>
-  // Авто-очистка для теста (добавь #clear в ссылку — и прогресс сбросится)
+  // Авто-очистка для теста (если в ссылке #clear)
   if (window.location.hash === '#clear') {
     localStorage.clear();
     window.location.hash = '';
@@ -109,9 +116,10 @@
   let level = parseInt(localStorage.getItem('level')) || 1;
   let progress = parseInt(localStorage.getItem('progress')) || 0;
   let active = false;
-  let timeLeft = 0;
 
   const diamondsPerLevel = 100;
+  let startTime = 0;
+  let timerInterval = null;
 
   function updateUI() {
     totalDiamondsText.innerText = totalDiamonds.toLocaleString();
@@ -122,58 +130,76 @@
 
   updateUI();
 
-  tapBtn.onclick = () => {
+  function startSession() {
     if (active) return;
 
     active = true;
     tapBtn.disabled = true;
     let tapsInSession = 0;
-    timeLeft = 5;
 
-    timerText.innerText = '5 сек';
-
+    // Сброс эффектов
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
 
-    const sessionTimer = setInterval(() => {
-      timeLeft--;
-      timerText.innerText = timeLeft > 0 ? timeLeft + ' сек' : '';
-      if (timeLeft <= 0) {
-        clearInterval(sessionTimer);
-        active = false;
-        tapBtn.disabled = false;
-        timerText.innerText = '';
-      }
-    }, 1000);
+    startTime = Date.now();
+    timerText.innerText = '5.00';
 
-    const tapListener = () => {
+    timerInterval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const remaining = Math.max(5 - elapsed, 0);
+      timerText.innerText = remaining.toFixed(2);
+
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        timerText.innerText = 'Время вышло!';
+        setTimeout(() => {
+          timerText.innerText = '';
+          active = false;
+          tapBtn.disabled = false;
+        }, 1000);
+      }
+    }, 50); // Обновляем каждые 50мс для плавности
+
+    // Обработчик тапов с поддержкой мульти-тача
+    const handleTap = (e) => {
       if (!active) return;
+      e.preventDefault(); // Чтобы не было зума/скролла
 
-      tapsInSession++;
-      totalDiamonds++;
-      progress++;
+      // Считаем все касания
+      const touches = e.touches ? e.touches.length : 1;
+      for (let i = 0; i < touches; i++) {
+        tapsInSession++;
+        totalDiamonds++;
+        progress++;
 
-      if (progress >= diamondsPerLevel) {
-        progress = 0;
-        level++;
+        if (progress >= diamondsPerLevel) {
+          progress = 0;
+          level++;
+        }
+
+        diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
+        diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
+
+        updateUI();
+        localStorage.setItem('totalDiamonds', totalDiamonds);
+        localStorage.setItem('level', level);
+        localStorage.setItem('progress', progress);
       }
-
-      diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
-      diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
-
-      updateUI();
-
-      localStorage.setItem('totalDiamonds', totalDiamonds);
-      localStorage.setItem('level', level);
-      localStorage.setItem('progress', progress);
     };
 
-    diamond.addEventListener('click', tapListener);
+    // Поддержка мыши и тача
+    diamond.addEventListener('click', handleTap);
+    diamond.addEventListener('touchstart', handleTap, { passive: false });
 
+    // Остановка через 5 секунд
     setTimeout(() => {
-      diamond.removeEventListener('click', tapListener);
+      diamond.removeEventListener('click', handleTap);
+      diamond.removeEventListener('touchstart', handleTap);
+      if (timerInterval) clearInterval(timerInterval);
     }, 5000);
-  };
+  }
+
+  tapBtn.onclick = startSession;
 
   const tg = window.Telegram.WebApp;
   tg.ready();
