@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Prototype</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -17,6 +17,7 @@
       align-items: center;
       justify-content: space-between;
       height: 100vh;
+      touch-action: manipulation; /* Помогает против случайного сворачивания */
     }
 
     .top {
@@ -27,9 +28,11 @@
     .diamond-wrapper {
       flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
+      width: 100%;
     }
 
     .diamond {
@@ -40,8 +43,7 @@
       animation: pulse 3s infinite ease-in-out;
       transition: transform 0.1s, filter 0.1s;
       filter: brightness(1);
-      touch-action: manipulation; /* Помогает против сворачивания */
-      position: relative;
+      z-index: 2;
     }
 
     @keyframes pulse {
@@ -50,14 +52,14 @@
       100% { transform: scale(1); }
     }
 
-    /* Таймер внутри алмаза */
+    /* Большой таймер над алмазом */
     #timer {
-      position: absolute;
-      font-size: 28px;
+      font-size: 48px;
       font-weight: bold;
-      color: rgba(135, 206, 255, 0.9); /* Полупрозрачный голубой, как кристалл */
-      text-shadow: 0 0 15px rgba(135, 206, 255, 0.8);
-      pointer-events: none; /* Чтобы тапы проходили сквозь таймер */
+      color: rgba(135, 206, 255, 0.95);
+      text-shadow: 0 0 20px rgba(135, 206, 255, 0.8);
+      margin-bottom: 20px;
+      pointer-events: none;
       z-index: 10;
     }
 
@@ -78,6 +80,16 @@
     button:disabled {
       background: #444;
     }
+
+    /* Прозрачный слой для тапов по всему экрану */
+    #tapArea {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
   </style>
 </head>
 <body>
@@ -96,8 +108,9 @@
   </div>
 
   <div class="diamond-wrapper">
+    <div id="timer"></div>
     <div id="diamond" class="diamond"></div>
-    <div id="timer"></div> <!-- Таймер теперь здесь, внутри wrapper -->
+    <div id="tapArea"></div> <!-- Невидимая зона для тапов по всему экрану -->
   </div>
 
   <div class="bottom">
@@ -111,8 +124,9 @@
     window.location.hash = '';
   }
 
-  const diamond = document.getElementById('diamond');
+  const tapArea = document.getElementById('tapArea');
   const tapBtn = document.getElementById('tapBtn');
+  const diamond = document.getElementById('diamond');
   const progressText = document.getElementById('progress');
   const levelText = document.getElementById('level');
   const totalDiamondsText = document.getElementById('totalDiamonds');
@@ -165,7 +179,7 @@
 
     const handleTap = (e) => {
       if (!active) return;
-      e.preventDefault(); // Ключевой момент против сворачивания!
+      e.preventDefault();
 
       const touches = e.touches ? e.touches.length : 1;
       for (let i = 0; i < touches; i++) {
@@ -188,12 +202,12 @@
       }
     };
 
-    diamond.addEventListener('touchstart', handleTap, { passive: false });
-    diamond.addEventListener('click', handleTap); // Для мыши/эмулятора
+    tapArea.addEventListener('touchstart', handleTap, { passive: false });
+    tapArea.addEventListener('click', handleTap);
 
     setTimeout(() => {
-      diamond.removeEventListener('touchstart', handleTap);
-      diamond.removeEventListener('click', handleTap);
+      tapArea.removeEventListener('touchstart', handleTap);
+      tapArea.removeEventListener('click', handleTap);
       if (timerInterval) clearInterval(timerInterval);
     }, 5000);
   }
