@@ -29,6 +29,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .diamond {
@@ -39,12 +40,25 @@
       animation: pulse 3s infinite ease-in-out;
       transition: transform 0.1s, filter 0.1s;
       filter: brightness(1);
+      touch-action: manipulation; /* Помогает против сворачивания */
+      position: relative;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
+    }
+
+    /* Таймер внутри алмаза */
+    #timer {
+      position: absolute;
+      font-size: 28px;
+      font-weight: bold;
+      color: rgba(135, 206, 255, 0.9); /* Полупрозрачный голубой, как кристалл */
+      text-shadow: 0 0 15px rgba(135, 206, 255, 0.8);
+      pointer-events: none; /* Чтобы тапы проходили сквозь таймер */
+      z-index: 10;
     }
 
     .bottom {
@@ -63,13 +77,6 @@
 
     button:disabled {
       background: #444;
-    }
-
-    #timer {
-      font-size: 24px;
-      font-weight: bold;
-      margin-top: 10px;
-      color: #ff4444;
     }
   </style>
 </head>
@@ -90,15 +97,15 @@
 
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
+    <div id="timer"></div> <!-- Таймер теперь здесь, внутри wrapper -->
   </div>
 
   <div class="bottom">
     <button id="tapBtn">TAP</button>
-    <div id="timer"></div>
   </div>
 
 <script>
-  // Авто-очистка для теста (если в ссылке #clear)
+  // Авто-очистка для теста
   if (window.location.hash === '#clear') {
     localStorage.clear();
     window.location.hash = '';
@@ -137,7 +144,6 @@
     tapBtn.disabled = true;
     let tapsInSession = 0;
 
-    // Сброс эффектов
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
 
@@ -151,21 +157,16 @@
 
       if (remaining <= 0) {
         clearInterval(timerInterval);
-        timerText.innerText = 'Время вышло!';
-        setTimeout(() => {
-          timerText.innerText = '';
-          active = false;
-          tapBtn.disabled = false;
-        }, 1000);
+        timerText.innerText = '';
+        active = false;
+        tapBtn.disabled = false;
       }
-    }, 50); // Обновляем каждые 50мс для плавности
+    }, 50);
 
-    // Обработчик тапов с поддержкой мульти-тача
     const handleTap = (e) => {
       if (!active) return;
-      e.preventDefault(); // Чтобы не было зума/скролла
+      e.preventDefault(); // Ключевой момент против сворачивания!
 
-      // Считаем все касания
       const touches = e.touches ? e.touches.length : 1;
       for (let i = 0; i < touches; i++) {
         tapsInSession++;
@@ -187,14 +188,12 @@
       }
     };
 
-    // Поддержка мыши и тача
-    diamond.addEventListener('click', handleTap);
     diamond.addEventListener('touchstart', handleTap, { passive: false });
+    diamond.addEventListener('click', handleTap); // Для мыши/эмулятора
 
-    // Остановка через 5 секунд
     setTimeout(() => {
-      diamond.removeEventListener('click', handleTap);
       diamond.removeEventListener('touchstart', handleTap);
+      diamond.removeEventListener('click', handleTap);
       if (timerInterval) clearInterval(timerInterval);
     }, 5000);
   }
