@@ -29,7 +29,6 @@ body {
 #level {
   font-size: 32px;
   font-weight: bold;
-  margin-top: 140px; /* место под таймер */
 }
 
 .progress-container {
@@ -53,12 +52,12 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 60px; /* гармоничное место над уровнем */
+  top: 20px; /* сверху */
   width: 100%;
   text-align: center;
   display: none;
   pointer-events: none;
-  z-index: 50; /* поверх всего */
+  z-index: 50;
 }
 
 #timer {
@@ -116,7 +115,7 @@ body {
 #tapArea {
   position: fixed;
   inset: 0;
-  z-index: 100; /* всегда поверх всего во время сессии */
+  z-index: 100; 
 }
 
 .bottom {
@@ -314,7 +313,6 @@ function updateUI() {
 
 updateUI();
 
-// Пассивный доход
 setInterval(() => {
   if (!active) {
     totalDiamonds += passiveIncome;
@@ -327,10 +325,9 @@ setInterval(() => {
   }
 }, 1000);
 
-// Меню
 document.querySelectorAll('.menu-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    if (active) return; // блокировка перехода во время сессии
+  btn.addEventListener('click', () => {
+    if (active) return; 
     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
     document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
     const section = document.getElementById(btn.dataset.section);
@@ -339,7 +336,6 @@ document.querySelectorAll('.menu-btn').forEach(btn => {
   });
 });
 
-// Тап сессия
 function startSession() {
   if (active) return;
   active = true;
@@ -351,7 +347,7 @@ function startSession() {
   startTime = performance.now();
   timerInterval = setInterval(updateTimer, 30);
 
-  tapArea.style.pointerEvents = "auto"; // весь экран тапаем
+  tapArea.style.pointerEvents = "auto"; 
   tapArea.addEventListener('pointerdown', onPointerDown);
   tapArea.addEventListener('pointerup', onPointerUp);
   tapArea.addEventListener('pointercancel', onPointerUp);
@@ -412,7 +408,6 @@ function onPointerUp(e) {
 
 tapBtn.onclick = startSession;
 
-// Апгрейды
 document.getElementById('upgradePickaxe').onclick = () => {
   const cost = 10 * pickaxeLevel;
   if (totalDiamonds >= cost) {
