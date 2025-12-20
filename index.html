@@ -52,12 +52,12 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 120px; /* гармонично над алмазом */
+  top: 120px; /* гармоничное положение как в идеальном коде */
   width: 100%;
   text-align: center;
   display: none;
   pointer-events: none;
-  z-index: 10;
+  z-index: 20;
 }
 
 #timer {
@@ -103,7 +103,7 @@ body {
   clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
   animation: breathe 3.8s ease-in-out infinite;
   transform: scale(var(--hit-scale, 1));
-  transition: filter 0.12s;
+  transition: transform 0.12s;
 }
 
 @keyframes breathe {
@@ -112,12 +112,10 @@ body {
   100% { transform: scale(1); }
 }
 
-/* Tap зона теперь покрывает весь экран */
 #tapArea {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 20;
-  display: none; /* включается только во время сессии */
+  z-index: 50; /* поверх всего, чтобы весь экран был тап-зоной */
 }
 
 .bottom {
@@ -138,6 +136,7 @@ button:disabled {
   background: #444;
 }
 
+/* Нижнее меню */
 #menu {
   position: fixed;
   bottom: 0;
@@ -146,7 +145,7 @@ button:disabled {
   justify-content: space-around;
   background: rgba(0, 0, 0, 0.8);
   padding: 10px 0;
-  z-index: 5;
+  z-index: 10;
 }
 
 .menu-btn {
@@ -163,6 +162,7 @@ button:disabled {
   font-weight: bold;
 }
 
+/* Разделы */
 .section {
   display: none;
   flex: 1;
@@ -214,7 +214,9 @@ button:disabled {
 <div id="tapSection" class="section">
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
+    <div id="tapArea"></div>
   </div>
+
   <div class="bottom">
     <button id="tapBtn">TAP</button>
   </div>
@@ -255,8 +257,6 @@ button:disabled {
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
   <button class="menu-btn" data-section="farmSection">Фарм</button>
 </div>
-
-<div id="tapArea"></div> <!-- зона для всего экрана -->
 
 <script>
 const tapArea = document.getElementById('tapArea');
@@ -330,8 +330,8 @@ setInterval(() => {
 
 // Меню
 document.querySelectorAll('.menu-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (active) return; // блокируем переход во время сессии
+  btn.addEventListener('click', (e) => {
+    if (active) return; // блокировка перехода во время сессии
     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
     document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
     const section = document.getElementById(btn.dataset.section);
@@ -347,7 +347,6 @@ function startSession() {
 
   tapBtn.disabled = true;
   timerContainer.style.display = 'block';
-  tapArea.style.display = 'block';
   timer.classList.remove('urgent');
 
   startTime = performance.now();
@@ -362,7 +361,6 @@ function endSession() {
   active = false;
   tapBtn.disabled = false;
   timerContainer.style.display = 'none';
-  tapArea.style.display = 'none';
   activePointers.clear();
   diamond.style.setProperty('--hit-scale', 1);
 
