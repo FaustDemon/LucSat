@@ -35,7 +35,6 @@
       width: 100%;
     }
 
-    /* Таймер выше алмаза */
     #timer {
       font-size: 64px;
       font-weight: bold;
@@ -47,14 +46,12 @@
       animation: timerPulse 2s infinite ease-in-out;
     }
 
-    /* Пульсация таймера */
     @keyframes timerPulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
 
-    /* Сильная пульсация + розовый цвет в последние секунды */
     #timer.urgent {
       color: rgba(255, 182, 193, 0.95); /* Нежно-розовый */
       text-shadow: 0 0 30px rgba(255, 182, 193, 0.9);
@@ -128,7 +125,7 @@
   </div>
 
   <div class="diamond-wrapper">
-    <div id="timer">00:05:00</div>
+    <div id="timer"></div>
     <div id="diamond" class="diamond"></div>
     <div id="tapArea"></div>
   </div>
@@ -138,7 +135,7 @@
   </div>
 
 <script>
-  // Авто-очистка
+  // Авто-очистка для теста
   if (window.location.hash === '#clear') {
     localStorage.clear();
     window.location.hash = '';
@@ -171,10 +168,11 @@
 
   updateUI();
 
+  // Формат таймера 00:05:00 (секунды:сотые)
   function formatTime(remaining) {
-    const secs = Math.floor(remaining);
-    const hundredths = Math.round((remaining - secs) * 100);
-    return `00:${secs.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
+    const totalSeconds = Math.floor(remaining);
+    const hundredths = Math.round((remaining - totalSeconds) * 100);
+    return `00:${totalSeconds.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
   }
 
   function startSession() {
@@ -187,20 +185,17 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timerText.classList.remove('urgent');
-
-    startTime = Date.now();
     timerText.innerText = formatTime(5);
 
+    startTime = performance.now(); // Более точное время
+
     timerInterval = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000;
-      const remaining = Math.max(5 - elapsed, 0);
+      const elapsedMs = performance.now() - startTime;
+      const remaining = Math.max(5 - elapsedMs / 1000, 0);
       timerText.innerText = formatTime(remaining);
 
-      // Последняя секунда — розовый + сильная пульсация
       if (remaining <= 1) {
         timerText.classList.add('urgent');
-      } else {
-        timerText.classList.remove('urgent');
       }
 
       if (remaining <= 0) {
@@ -242,7 +237,10 @@
     setTimeout(() => {
       tapArea.removeEventListener('touchstart', handleTap);
       tapArea.removeEventListener('click', handleTap);
-      if (timerInterval) clearInterval(timerInterval);
+      clearInterval(timerInterval);
+      timerText.innerText = '';
+      active = false;
+      tapBtn.disabled = false;
     }, 5000);
   }
 
