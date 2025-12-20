@@ -259,6 +259,13 @@ button:disabled {
 </div>
 
 <script>
+const CONFIG = {
+  tapValue: 0.037,
+  sessionDuration: 5000,
+  maxTouches: 5,
+  urgentThreshold: 1000
+};
+
 const tapBtn = document.getElementById('tapBtn');
 const diamond = document.getElementById('diamond');
 const totalDiamondsText = document.getElementById('totalDiamonds');
@@ -273,9 +280,6 @@ let level = parseInt(localStorage.getItem('level')) || 1;
 let progress = parseFloat(localStorage.getItem('progress')) || 0;
 
 const diamondsPerLevel = 100;
-const sessionDuration = 5000;
-const urgentThreshold = 1000;
-const maxTouches = 5;
 
 let active = false;
 let startTime = 0;
@@ -295,14 +299,6 @@ function updateUI() {
 
 updateUI();
 
-setInterval(() => {
-  if (!active) {
-    totalDiamonds += 0;
-    progress += 0;
-    updateUI();
-  }
-}, 1000);
-
 document.querySelectorAll('.menu-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (active) return;
@@ -321,7 +317,7 @@ function startSession() {
   timerContainer.style.display = 'block';
   timer.classList.remove('urgent');
   startTime = performance.now();
-  timerInterval = setInterval(updateTimer, 30);
+  timerInterval = setInterval(updateTimer, 50); // обновление 50ms
   activePointers.clear();
 }
 
@@ -335,13 +331,11 @@ function endSession() {
 }
 
 function updateTimer() {
-  const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
+  const remaining = Math.max(CONFIG.sessionDuration - (performance.now() - startTime), 0);
   const s = Math.floor(remaining / 1000);
   const ms = Math.floor((remaining % 1000) / 10);
-
   timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
-
-  if (remaining <= urgentThreshold) timer.classList.add('urgent');
+  if (remaining <= CONFIG.urgentThreshold) timer.classList.add('urgent');
   if (remaining <= 0) endSession();
 }
 
@@ -350,8 +344,8 @@ document.body.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   if (!activePointers.has(e.pointerId)) {
     activePointers.add(e.pointerId);
-    const effectiveTouches = Math.min(activePointers.size, maxTouches);
-    const gain = 0.066 * effectiveTouches;
+    const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
+    const gain = CONFIG.tapValue * effectiveTouches;
 
     totalDiamonds += gain;
     progress += gain;
@@ -368,12 +362,18 @@ document.body.addEventListener('pointerdown', (e) => {
 
 document.body.addEventListener('pointerup', (e) => {
   activePointers.delete(e.pointerId);
-  const effectiveTouches = Math.min(activePointers.size, maxTouches);
+  const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
   diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
 });
 
 tapBtn.onclick = startSession;
 
+// Placeholder для X-раздела
+document.getElementById('xAction').onclick = () => {
+  alert('Действие X будет доступно позже!');
+};
+
+// Telegram WebApp
 if (window.Telegram && Telegram.WebApp) {
     const tg = Telegram.WebApp;
     tg.ready();
