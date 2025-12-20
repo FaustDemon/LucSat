@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Diamond Tap - v1.1.1</title>
+<title>Diamond Tap - v1.1.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -25,7 +25,15 @@
   #progressBar { height:100%; width:0%; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.2s; }
 
   /* --- Timer --- */
-  #timerContainer { position:fixed; top:90px; width:100%; text-align:center; pointer-events:none; z-index:11; }
+  #timerContainer {
+    display: none; /* Скрыт по умолчанию */
+    position: fixed;
+    top:90px;
+    width:100%;
+    text-align:center;
+    pointer-events:none;
+    z-index:11;
+  }
   #timer { font-family:'Courier New', monospace; font-size:52px; font-weight:bold; color:#8fd3f4; text-shadow:0 0 12px rgba(143,211,244,0.5); animation: softBreathe 4s infinite ease-in-out; }
   #timer.urgent { color:#ff69b4; text-shadow:0 0 16px rgba(255,105,180,0.7); animation: urgentBreathe 1.2s infinite ease-in-out; }
   @keyframes softBreathe { 0%,100%{opacity:0.9} 50%{opacity:1} }
@@ -54,32 +62,8 @@
   .card button { margin-top:10px; width:100%; }
 
   /* --- Section X grid --- */
-  #xSection { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; height:100%; overflow:hidden; }
-  #xSection .card { margin:0 0 6px 0; } /* убрали верхний отступ */
-  #xSection .grid-container { 
-    display:grid; 
-    grid-template-columns:repeat(4,1fr); 
-    grid-template-rows:repeat(6,1fr); 
-    gap:6px; 
-    width:90%; 
-    max-width:400px; 
-    height: calc(100% - 60px); /* под кнопку */
-    margin-top:0;
-  }
-  #xSection .grid-cell { 
-    background: linear-gradient(135deg,#84fab0,#8fd3f4); 
-    border-radius:8px; 
-    aspect-ratio:1/1; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center; 
-    font-weight:bold; 
-    color:#000; 
-    cursor:pointer; 
-    user-select:none; 
-    transition: transform 0.2s; 
-  }
-  #xSection .grid-cell:hover { transform: scale(1.08); }
+  #xSection .grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(6,1fr); gap:6px; width:100%; max-width:360px; height:100%; }
+  #xSection .grid .cell { background:#333; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; color:#8fd3f4; }
 </style>
 </head>
 <body>
@@ -110,15 +94,16 @@
 
   <!-- X Section -->
   <div id="xSection" class="section">
-    <div class="card"><button>Поле для будущих ячеек</button></div>
-    <div class="grid-container">
-      <!-- 24 ячейки -->
-      <div class="grid-cell">1</div><div class="grid-cell">2</div><div class="grid-cell">3</div><div class="grid-cell">4</div>
-      <div class="grid-cell">5</div><div class="grid-cell">6</div><div class="grid-cell">7</div><div class="grid-cell">8</div>
-      <div class="grid-cell">9</div><div class="grid-cell">10</div><div class="grid-cell">11</div><div class="grid-cell">12</div>
-      <div class="grid-cell">13</div><div class="grid-cell">14</div><div class="grid-cell">15</div><div class="grid-cell">16</div>
-      <div class="grid-cell">17</div><div class="grid-cell">18</div><div class="grid-cell">19</div><div class="grid-cell">20</div>
-      <div class="grid-cell">21</div><div class="grid-cell">22</div><div class="grid-cell">23</div><div class="grid-cell">24</div>
+    <div class="card">
+      <p>Поле для будущих ячеек</p>
+    </div>
+    <div class="grid">
+      <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+      <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+      <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+      <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
+      <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
+      <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
     </div>
   </div>
 
@@ -145,33 +130,36 @@
 </div>
 
 <script>
-const CONFIG={tapValue:0.037,sessionDuration:5000,maxTouches:5,urgentThreshold:1000};
+const CONFIG = {tapValue:0.037, sessionDuration:5000, maxTouches:5, urgentThreshold:1000};
+let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds'))||0;
+let level = parseInt(localStorage.getItem('level'))||1;
+let progress = parseFloat(localStorage.getItem('progress'))||0;
+const diamondsPerLevel = 100;
+
+let active=false;
+let startTime=0;
+let timerInterval=null;
+const activePointers=new Set();
+
 const tapBtn=document.getElementById('tapBtn');
 const diamond=document.getElementById('diamond');
 const totalDiamondsText=document.getElementById('totalDiamonds');
 const levelText=document.getElementById('level');
 const progressBar=document.getElementById('progressBar');
-const timer=document.getElementById('timer');
 const timerContainer=document.getElementById('timerContainer');
-
-let totalDiamonds=parseFloat(localStorage.getItem('totalDiamonds'))||0;
-let level=parseInt(localStorage.getItem('level'))||1;
-let progress=parseFloat(localStorage.getItem('progress'))||0;
-const diamondsPerLevel=100;
-let active=false,startTime=0,timerInterval=null;
-const activePointers=new Set();
+const timer=document.getElementById('timer');
 
 function updateUI(){
-  totalDiamondsText.innerText=totalDiamonds.toFixed(3);
-  levelText.innerText=`LEVEL ${level}`;
-  progressBar.style.width=`${(progress/diamondsPerLevel)*100}%`;
+  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
+  levelText.innerText = `LEVEL ${level}`;
+  progressBar.style.width = `${(progress/diamondsPerLevel)*100}%`;
   localStorage.setItem('totalDiamonds',totalDiamonds);
   localStorage.setItem('level',level);
   localStorage.setItem('progress',progress);
 }
+
 updateUI();
 
-// Menu switching
 document.querySelectorAll('.menu-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(active) return;
@@ -182,17 +170,17 @@ document.querySelectorAll('.menu-btn').forEach(btn=>{
   });
 });
 
-// TAP session
 function startSession(){
-  if(active)return;
+  if(active) return;
   active=true;
   tapBtn.disabled=true;
-  timerContainer.style.display='block';
+  timerContainer.style.display='block'; // показываем таймер только при TAP
   timer.classList.remove('urgent');
   startTime=performance.now();
   timerInterval=setInterval(updateTimer,50);
   activePointers.clear();
 }
+
 function endSession(){
   active=false;
   tapBtn.disabled=false;
@@ -201,6 +189,7 @@ function endSession(){
   diamond.style.setProperty('--hit-scale',1);
   clearInterval(timerInterval);
 }
+
 function updateTimer(){
   const remaining=Math.max(CONFIG.sessionDuration-(performance.now()-startTime),0);
   const s=Math.floor(remaining/1000);
@@ -209,32 +198,37 @@ function updateTimer(){
   if(remaining<=CONFIG.urgentThreshold) timer.classList.add('urgent');
   if(remaining<=0) endSession();
 }
+
 document.body.addEventListener('pointerdown',e=>{
-  if(!active)return;
+  if(!active) return;
   e.preventDefault();
   if(!activePointers.has(e.pointerId)){
     activePointers.add(e.pointerId);
-    const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
-    const gain=CONFIG.tapValue*effectiveTouches;
-    totalDiamonds+=gain; progress+=gain;
-    if(progress>=diamondsPerLevel){progress-=diamondsPerLevel; level++;}
-    diamond.style.setProperty('--hit-scale',1+effectiveTouches*0.06);
+    const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
+    const gain = CONFIG.tapValue * effectiveTouches;
+    totalDiamonds += gain; progress += gain;
+    if(progress >= diamondsPerLevel){ progress -= diamondsPerLevel; level++; }
+    diamond.style.setProperty('--hit-scale',1 + effectiveTouches*0.06);
     updateUI();
   }
 });
+
 document.body.addEventListener('pointerup',e=>{
   activePointers.delete(e.pointerId);
-  const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
-  diamond.style.setProperty('--hit-scale',1+effectiveTouches*0.06);
+  const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
+  diamond.style.setProperty('--hit-scale',1 + effectiveTouches*0.06);
 });
+
 tapBtn.onclick=startSession;
 
 // Telegram WebApp
-if(window.Telegram&&Telegram.WebApp){
-  const tg=Telegram.WebApp; tg.ready(); tg.expand(); tg.disableVerticalSwipes();
+if(window.Telegram && Telegram.WebApp){
+  const tg = Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  tg.disableVerticalSwipes();
 }
 </script>
-
 </body>
 </html>
 
