@@ -76,7 +76,16 @@
 <body>
 
   <div class="top">
-    <div id="level">LEVEL 1</div>
+    <div style="font-size: 24px; margin-bottom: 10px;">
+      <span id="totalDiamonds">0</span> 💎
+    </div>
+    <div id="level" style="font-size: 32px; font-weight: bold;">LEVEL 1</div>
+    
+    <!-- Полоска прогресса -->
+    <div style="width: 80%; max-width: 300px; background: #333; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+      <div id="progressBar" style="width: 0%; height: 12px; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.3s;"></div>
+    </div>
+    
     <div id="progress">0 / 100</div>
   </div>
 
@@ -93,51 +102,12 @@
   const diamond = document.getElementById('diamond');
   const tapBtn = document.getElementById('tapBtn');
   const progressText = document.getElementById('progress');
+  const levelText = document.getElementById('level');
+  const totalDiamondsText = document.getElementById('totalDiamonds');
+  const progressBar = document.getElementById('progressBar');
   const timerText = document.getElementById('timer');
 
-  let taps = 0;
-  let active = false;
-  let timeLeft = 0;
-
-  tapBtn.onclick = () => {
-    if (active) return;
-
-    active = true;
-    tapBtn.disabled = true;
-    taps = 0;
-    timeLeft = 5;
-
-    timerText.innerText = '5 сек';
-
-    const session = setInterval(() => {
-      timeLeft--;
-      timerText.innerText = timeLeft > 0 ? timeLeft + ' сек' : '';
-
-      if (timeLeft <= 0) {
-        clearInterval(session);
-        active = false;
-        tapBtn.disabled = false;
-      }
-    }, 1000);
-
-    const tapListener = () => {
-      if (!active) return;
-      taps++;
-      progressText.innerText = taps + ' / 100';
-
-      // микро-реакция
-      diamond.style.transform = `scale(${1 + taps * 0.002})`;
-      diamond.style.filter = `brightness(${1 + taps * 0.01})`;
-    };
-
-    diamond.addEventListener('click', tapListener);
-
-    setTimeout(() => {
-      diamond.removeEventListener('click', tapListener);
-    }, 5000);
-  };
-</script>
-
-</body>
-</html>
-
+  // Переменные состояния
+  let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
+  let level = parseInt(localStorage.getItem('level')) || 1;
+  let progress = parseInt(localStorage.getItem
