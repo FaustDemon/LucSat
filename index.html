@@ -17,12 +17,14 @@
       align-items: center;
       height: 100vh;
       touch-action: none;
+      position: relative;
     }
 
     .top {
       margin-top: 20px;
       text-align: center;
       width: 100%;
+      z-index: 2;
     }
 
     #level {
@@ -45,10 +47,15 @@
       width: 0%;
     }
 
+    /* 🔥 Таймер ВНЕ потока */
     #timerContainer {
-      display: none;
+      position: absolute;
+      top: 120px;
+      width: 100%;
       text-align: center;
-      margin: 20px 0;
+      display: none;
+      z-index: 3;
+      pointer-events: none;
     }
 
     #timer {
@@ -85,6 +92,7 @@
       justify-content: center;
       position: relative;
       width: 100%;
+      z-index: 1;
     }
 
     .diamond {
@@ -105,6 +113,7 @@
 
     .bottom {
       margin-bottom: 30px;
+      z-index: 2;
     }
 
     button {
@@ -169,7 +178,7 @@
   let timerInterval = null;
 
   const diamondsPerLevel = 100;
-  const tapValue = 0.08;
+  const tapValue = 0.066; // 🔥 сложнее
   const sessionDuration = 5000;
   const urgentThreshold = 1000;
   const maxPointers = 5;
@@ -177,9 +186,9 @@
   const activePointers = new Set();
 
   function updateUI() {
-    totalDiamondsText.innerText = totalDiamonds.toFixed(2);
+    totalDiamondsText.innerText = totalDiamonds.toFixed(3);
     levelText.innerText = `LEVEL ${level}`;
-    progressText.innerText = `${progress.toFixed(2)} / ${diamondsPerLevel}`;
+    progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
     progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
   }
 
@@ -241,7 +250,8 @@
       level++;
     }
 
-    diamond.style.transform = `scale(${Math.min(1.4, 1 + activePointers.size * 0.05)})`;
+    diamond.style.transform =
+      `scale(${Math.min(1.4, 1 + activePointers.size * 0.05)})`;
 
     updateUI();
   }
