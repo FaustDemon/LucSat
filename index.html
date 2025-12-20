@@ -14,7 +14,6 @@ body {
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  align-items: center;
   height: 100vh;
   touch-action: none;
   position: relative;
@@ -53,7 +52,7 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 200px; /* ниже прогресса */
+  top: 200px;
   width: 100%;
   text-align: center;
   display: none;
@@ -120,7 +119,8 @@ body {
 }
 
 .bottom {
-  margin-bottom: 30px;
+  margin-bottom: 80px; /* место для меню */
+  text-align: center;
 }
 
 button {
@@ -136,8 +136,9 @@ button:disabled {
   background: #444;
 }
 
+/* Нижнее меню */
 #menu {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   width: 100%;
   display: flex;
@@ -153,41 +154,41 @@ button:disabled {
   color: #fff;
   font-size: 16px;
   cursor: pointer;
+  padding: 10px;
 }
 
-#upgradeSection, #farmSection {
+.menu-btn.active {
+  color: #8fd3f4;
+  font-weight: bold;
+}
+
+/* Разделы */
+.section {
   display: none;
+  flex: 1;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  width: 100%;
+  justify-content: flex-start;
   padding: 20px;
+  overflow-y: auto;
 }
 
-#upgradeSection h2, #farmSection h2 {
-  margin-bottom: 20px;
+#tapSection {
+  display: flex;
 }
 
 .card {
   background: #333;
   padding: 15px;
-  margin: 10px;
+  margin: 10px 0;
   border-radius: 10px;
-  width: 80%;
-  text-align: left;
+  width: 90%;
+  max-width: 350px;
 }
 
 .card button {
   margin-top: 10px;
-  padding: 10px;
-  background: #1f6bff;
-  border: none;
-  color: #fff;
-  border-radius: 8px;
-}
-
-.card button:disabled {
-  background: #444;
+  width: 100%;
 }
 </style>
 </head>
@@ -210,45 +211,51 @@ button:disabled {
   <div id="timer">00:05:00</div>
 </div>
 
-<div class="diamond-wrapper" id="tapSection">
-  <div id="diamond" class="diamond"></div>
-  <div id="tapArea"></div>
+<div id="tapSection" class="section">
+  <div class="diamond-wrapper">
+    <div id="diamond" class="diamond"></div>
+    <div id="tapArea"></div>
+  </div>
+
+  <div class="bottom">
+    <button id="tapBtn">TAP</button>
+  </div>
 </div>
 
-<div id="upgradeSection">
+<div id="upgradeSection" class="section">
   <h2>Прокачка</h2>
   <div class="card">
     <h3>Кирка</h3>
     <p>Уровень: <span id="pickaxeLevel">1</span></p>
-    <p>Стоимость апгрейда: <span id="pickaxeCost">10</span> 💎</p>
+    <p>Эффект: +0.01 к тапу</p>
+    <p>Стоимость: <span id="pickaxeCost">10</span> 💎</p>
     <button id="upgradePickaxe">Апгрейд</button>
   </div>
   <div class="card">
     <h3>Лицензия на добычу</h3>
     <p>Уровень: <span id="licenseLevel">1</span></p>
-    <p>Стоимость апгрейда: <span id="licenseCost">20</span> 💎</p>
+    <p>Эффект: +0.001 пассив/сек</p>
+    <p>Стоимость: <span id="licenseCost">20</span> 💎</p>
     <button id="upgradeLicense">Апгрейд</button>
   </div>
-  <!-- Добавь больше карточек по аналогии -->
 </div>
 
-<div id="farmSection">
-  <h2>Фарм</h2>
-  <p>Сливай алмазы, разводи кристаллы и устраивай дуэли!</p>
+<div id="farmSection" class="section">
+  <h2>Фарм Кристаллов</h2>
   <div class="card">
     <h3>Кристалл</h3>
     <p>Уровень: <span id="crystalLevel">1</span></p>
     <p>Пассивный доход: <span id="passiveIncome">0.001</span> / сек</p>
     <button id="feedCrystal">Кормить (5 💎)</button>
   </div>
-  <button id="mergeCrystals">Слить кристаллы</button>
-  <button id="duelCrystals">Дуэль</button>
+  <button id="mergeCrystals">Слить кристаллы (требует 2 уровня)</button>
+  <button id="duelCrystals">Дуэль (шанс на +10 💎)</button>
 </div>
 
 <div id="menu">
-  <button class="menu-btn" onclick="showSection('tapSection')">Тап</button>
-  <button class="menu-btn" onclick="showSection('upgradeSection')">Прокачка</button>
-  <button class="menu-btn" onclick="showSection('farmSection')">Фарм</button>
+  <button class="menu-btn active" data-section="tapSection">Тап</button>
+  <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
+  <button class="menu-btn" data-section="farmSection">Фарм</button>
 </div>
 
 <script>
@@ -268,11 +275,13 @@ let progress = parseFloat(localStorage.getItem('progress')) || 0;
 
 let pickaxeLevel = parseInt(localStorage.getItem('pickaxeLevel')) || 1;
 let licenseLevel = parseInt(localStorage.getItem('licenseLevel')) || 1;
-
 let crystalLevel = parseInt(localStorage.getItem('crystalLevel')) || 1;
+
 let passiveIncome = 0.001 * crystalLevel;
 
-const tapValue = 0.066;
+const baseTapValue = 0.066;
+let tapValue = baseTapValue + (pickaxeLevel - 1) * 0.01;
+
 const diamondsPerLevel = 100;
 const sessionDuration = 5000;
 const urgentThreshold = 1000;
@@ -283,37 +292,18 @@ let startTime = 0;
 let timerInterval = null;
 const activePointers = new Set();
 
-const pickaxeCostBase = 10;
-const licenseCostBase = 20;
-
-const upgradePickaxe = document.getElementById('upgradePickaxe');
-const pickaxeLevelSpan = document.getElementById('pickaxeLevel');
-const pickaxeCostSpan = document.getElementById('pickaxeCost');
-
-const upgradeLicense = document.getElementById('upgradeLicense');
-const licenseLevelSpan = document.getElementById('licenseLevel');
-const licenseCostSpan = document.getElementById('licenseCost');
-
-const feedCrystal = document.getElementById('feedCrystal');
-const crystalLevelSpan = document.getElementById('crystalLevel');
-const passiveIncomeSpan = document.getElementById('passiveIncome');
-
-const mergeCrystals = document.getElementById('mergeCrystals');
-const duelCrystals = document.getElementById('duelCrystals');
-
 function updateUI() {
   totalDiamondsText.innerText = totalDiamonds.toFixed(3);
   levelText.innerText = `LEVEL ${level}`;
   progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
   progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
 
-  pickaxeLevelSpan.innerText = pickaxeLevel;
-  licenseLevelSpan.innerText = licenseLevel;
-  pickaxeCostSpan.innerText = (pickaxeCostBase * pickaxeLevel);
-  licenseCostSpan.innerText = (licenseCostBase * licenseLevel);
-
-  crystalLevelSpan.innerText = crystalLevel;
-  passiveIncomeSpan.innerText = passiveIncome.toFixed(3);
+  document.getElementById('pickaxeLevel').innerText = pickaxeLevel;
+  document.getElementById('pickaxeCost').innerText = (10 * pickaxeLevel).toFixed(3);
+  document.getElementById('licenseLevel').innerText = licenseLevel;
+  document.getElementById('licenseCost').innerText = (20 * licenseLevel).toFixed(3);
+  document.getElementById('crystalLevel').innerText = crystalLevel;
+  document.getElementById('passiveIncome').innerText = passiveIncome.toFixed(3);
 
   localStorage.setItem('totalDiamonds', totalDiamonds);
   localStorage.setItem('level', level);
@@ -325,14 +315,31 @@ function updateUI() {
 
 updateUI();
 
-function showSection(sectionId) {
-  document.getElementById('tapSection').style.display = 'none';
-  document.getElementById('upgradeSection').style.display = 'none';
-  document.getElementById('farmSection').style.display = 'none';
+// Пассивный доход
+setInterval(() => {
+  if (!active) { // пассив только когда не в сессии
+    totalDiamonds += passiveIncome;
+    progress += passiveIncome;
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
+    updateUI();
+  }
+}, 1000);
 
-  document.getElementById(sectionId).style.display = 'block';
-}
+// Меню
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+    const section = document.getElementById(btn.dataset.section);
+    section.style.display = 'flex';
+    btn.classList.add('active');
+  });
+});
 
+// Тап сессия
 function startSession() {
   if (active) return;
   active = true;
@@ -381,7 +388,7 @@ function onPointerDown(e) {
   activePointers.add(e.pointerId);
 
   const effectiveTouches = Math.min(activePointers.size, maxTouches);
-  const gain = tapValue * effectiveTouches;  // Множитель от пальцев
+  const gain = tapValue * effectiveTouches;
 
   totalDiamonds += gain;
   progress += gain;
@@ -391,60 +398,40 @@ function onPointerDown(e) {
     level++;
   }
 
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.04);  // Лёгкий апгрейд scale от пальцев
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
   updateUI();
 }
 
 function onPointerUp(e) {
   activePointers.delete(e.pointerId);
   const effectiveTouches = Math.min(activePointers.size, maxTouches);
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.04);
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
 }
 
 tapBtn.onclick = startSession;
 
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
-tg.disableVerticalSwipes();
-
-// Пассивный доход от кристаллов (каждую секунду)
-setInterval(() => {
-  totalDiamonds += passiveIncome;
-  progress += passiveIncome;
-  if (progress >= diamondsPerLevel) {
-    progress -= diamondsPerLevel;
-    level++;
-  }
-  updateUI();
-}, 1000);
-
-// Апгрейд кирки
-upgradePickaxe.onclick = () => {
-  const cost = pickaxeCostBase * pickaxeLevel;
+// Апгрейды
+document.getElementById('upgradePickaxe').onclick = () => {
+  const cost = 10 * pickaxeLevel;
   if (totalDiamonds >= cost) {
     totalDiamonds -= cost;
     pickaxeLevel++;
-    // Увеличивает tapValue на 0.01 за уровень
-    tapValue += 0.01;
+    tapValue = baseTapValue + (pickaxeLevel - 1) * 0.01;
     updateUI();
   }
 };
 
-// Апгрейд лицензии
-upgradeLicense.onclick = () => {
-  const cost = licenseCostBase * licenseLevel;
+document.getElementById('upgradeLicense').onclick = () => {
+  const cost = 20 * licenseLevel;
   if (totalDiamonds >= cost) {
     totalDiamonds -= cost;
     licenseLevel++;
-    // Увеличивает пассивный доход
     passiveIncome += 0.001;
     updateUI();
   }
 };
 
-// Кормить кристалл
-feedCrystal.onclick = () => {
+document.getElementById('feedCrystal').onclick = () => {
   if (totalDiamonds >= 5) {
     totalDiamonds -= 5;
     crystalLevel++;
@@ -453,34 +440,27 @@ feedCrystal.onclick = () => {
   }
 };
 
-// Слить кристаллы (merge) — простая симуляция
-mergeCrystals.onclick = () => {
-  // Логика merge: предположим, сливает 2 кристалла для апгрейда
+document.getElementById('mergeCrystals').onclick = () => {
   if (crystalLevel >= 2) {
-    crystalLevel += 1;  // Аппгрейд
+    crystalLevel++;
     passiveIncome = 0.001 * crystalLevel;
     updateUI();
-    alert('Кристаллы слиты! Уровень повышен.');
+    alert('Кристаллы слиты! Уровень повышен');
   } else {
-    alert('Недостаточно кристаллов для слияния.');
+    alert('Нужно минимум 2 уровня для слияния');
   }
 };
 
-// Дуэль — простая симуляция
-duelCrystals.onclick = () => {
-  // Симуляция дуэли: случайный выигрыш
+document.getElementById('duelCrystals').onclick = () => {
   const win = Math.random() > 0.5;
   if (win) {
     totalDiamonds += 10;
     alert('Победа в дуэли! +10 💎');
   } else {
-    alert('Поражение в дуэли. Попробуй снова!');
+    alert('Поражение... Попробуй позже');
   }
   updateUI();
 };
-
-// Показать тап по умолчанию
-showSection('tapSection');
 
 const tg = window.Telegram.WebApp;
 tg.ready();
@@ -489,4 +469,4 @@ tg.disableVerticalSwipes();
 </script>
 
 </body>
-  </html>
+</html>
