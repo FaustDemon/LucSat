@@ -47,10 +47,10 @@
       width: 0%;
     }
 
-    /* 🔥 Таймер ВНЕ потока */
+    /* ⏱ Таймер ниже прогресса, но вне потока */
     #timerContainer {
       position: absolute;
-      top: 120px;
+      top: calc(140px + 4vh);
       width: 100%;
       text-align: center;
       display: none;
@@ -108,7 +108,6 @@
       position: absolute;
       inset: 0;
       z-index: 5;
-      pointer-events: auto;
     }
 
     .bottom {
@@ -135,14 +134,14 @@
 
 <div class="top">
   <div style="font-size:24px;margin-bottom:10px;">
-    <span id="totalDiamonds">0.00</span> 💎
+    <span id="totalDiamonds">0.000</span> 💎
   </div>
   <div id="level">LEVEL 1</div>
 
   <div class="progress-container">
     <div id="progressBar"></div>
   </div>
-  <div id="progress">0.00 / 100</div>
+  <div id="progress">0.000 / 100</div>
 </div>
 
 <div id="timerContainer">
@@ -178,12 +177,13 @@
   let timerInterval = null;
 
   const diamondsPerLevel = 100;
-  const tapValue = 0.066; // 🔥 сложнее
+  const tapValue = 0.066;
   const sessionDuration = 5000;
   const urgentThreshold = 1000;
   const maxPointers = 5;
 
   const activePointers = new Set();
+  let lastEffectiveTouches = 0;
 
   function updateUI() {
     totalDiamondsText.innerText = totalDiamonds.toFixed(3);
@@ -199,6 +199,9 @@
     tapBtn.disabled = true;
     timerContainer.style.display = 'block';
     timer.classList.remove('urgent');
+
+    activePointers.clear();
+    lastEffectiveTouches = 0;
 
     startTime = performance.now();
     timerInterval = setInterval(updateTimer, 30);
@@ -228,36 +231,39 @@
     const ms = Math.floor((remaining % 1000) / 10);
     timer.innerText = `00:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
 
-    if (remaining <= urgentThreshold) {
-      timer.classList.add('urgent');
-    }
-
+    if (remaining <= urgentThreshold) timer.classList.add('urgent');
     if (remaining <= 0) endSession();
   }
 
   function onPointerDown(e) {
     if (!active) return;
-    if (activePointers.size >= maxPointers) return;
 
     activePointers.add(e.pointerId);
 
-    const gain = tapValue;
-    totalDiamonds += gain;
-    progress += gain;
+    const effectiveTouches = Math.min(activePointers.size, maxPointers);
 
-    if (progress >= diamondsPerLevel) {
-      progress -= diamondsPerLevel;
-      level++;
+    if (effectiveTouches > lastEffectiveTouches) {
+      const gained = (effectiveTouches - lastEffectiveTouches) * tapValue;
+
+      totalDiamonds += gained;
+      progress += gained;
+
+      if (progress >= diamondsPerLevel) {
+        progress -= diamondsPerLevel;
+        level++;
+      }
+
+      diamond.style.transform =
+        `scale(${Math.min(1.4, 1 + effectiveTouches * 0.05)})`;
+
+      lastEffectiveTouches = effectiveTouches;
+      updateUI();
     }
-
-    diamond.style.transform =
-      `scale(${Math.min(1.4, 1 + activePointers.size * 0.05)})`;
-
-    updateUI();
   }
 
   function onPointerUp(e) {
     activePointers.delete(e.pointerId);
+    lastEffectiveTouches = Math.min(activePointers.size, maxPointers);
   }
 
   tapBtn.onclick = startSession;
