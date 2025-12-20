@@ -5,7 +5,6 @@
 <title>Diamond Tap</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
 <style>
 body {
   margin: 0;
@@ -163,14 +162,45 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 20px;
-  overflow-y: auto;
+  padding: 10px;
 }
 
+/* TAP раздел */
 #tapSection {
   display: flex;
 }
 
+/* X-раздел */
+#xSection {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  padding-bottom: 120px; /* для меню */
+}
+
+#xButtonsTop, #xButtonsBottom {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 5px 0;
+}
+
+#xField {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  flex: 1;
+  width: 100%;
+}
+
+.xCell {
+  background: #444;
+  border-radius: 8px;
+}
+
+/* Карточки */
 .card {
   background: #333;
   padding: 15px;
@@ -183,34 +213,6 @@ button:disabled {
 .card button {
   margin-top: 10px;
   width: 100%;
-}
-
-/* X Field Grid */
-#xField {
-  display: grid;
-  grid-template-columns: repeat(4, 60px);
-  grid-template-rows: repeat(6, 60px);
-  gap: 6px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.xCell {
-  width: 60px;
-  height: 60px;
-  background: #222;
-  border: 1px solid #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  font-size: 12px;
-  border-radius: 6px;
-}
-.xCell.locked {
-  background: #111;
-  color: #444;
-  border-style: dashed;
 }
 </style>
 </head>
@@ -233,7 +235,7 @@ button:disabled {
   <div id="timer">00:05:00</div>
 </div>
 
-<!-- Секции -->
+<!-- TAP Section -->
 <div id="tapSection" class="section">
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
@@ -254,9 +256,22 @@ button:disabled {
 <!-- Раздел X -->
 <div id="xSection" class="section">
   <h2>X</h2>
-  <div class="card">
-    <p>Поле X 4×6 (12 открытых / 12 закрытых)</p>
-    <div id="xField"></div>
+  <div id="xButtonsTop">
+    <button>Верхняя кнопка 1</button>
+    <button>Верхняя кнопка 2</button>
+  </div>
+  <div id="xField">
+    <!-- 24 ячейки -->
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+    <div class="xCell"></div><div class="xCell"></div><div class="xCell"></div><div class="xCell"></div>
+  </div>
+  <div id="xButtonsBottom">
+    <button>Нижняя кнопка 1</button>
+    <button>Нижняя кнопка 2</button>
   </div>
 </div>
 
@@ -288,10 +303,10 @@ button:disabled {
 
 <script>
 const CONFIG = {
-  tapValue: 0.037,        
-  sessionDuration: 5000,  
-  maxTouches: 5,          
-  urgentThreshold: 1000   
+  tapValue: 0.037,
+  sessionDuration: 5000,
+  maxTouches: 5,
+  urgentThreshold: 1000
 };
 
 const tapBtn = document.getElementById('tapBtn');
@@ -306,7 +321,6 @@ const timer = document.getElementById('timer');
 let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
 let level = parseInt(localStorage.getItem('level')) || 1;
 let progress = parseFloat(localStorage.getItem('progress')) || 0;
-
 const diamondsPerLevel = 100;
 
 let active = false;
@@ -319,7 +333,6 @@ function updateUI() {
   levelText.innerText = `LEVEL ${level}`;
   progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
   progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
-
   localStorage.setItem('totalDiamonds', totalDiamonds);
   localStorage.setItem('level', level);
   localStorage.setItem('progress', progress);
@@ -374,15 +387,12 @@ document.body.addEventListener('pointerdown', (e) => {
     activePointers.add(e.pointerId);
     const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
     const gain = CONFIG.tapValue * effectiveTouches;
-
     totalDiamonds += gain;
     progress += gain;
-
     if (progress >= diamondsPerLevel) {
       progress -= diamondsPerLevel;
       level++;
     }
-
     diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
     updateUI();
   }
@@ -396,20 +406,10 @@ document.body.addEventListener('pointerup', (e) => {
 
 tapBtn.onclick = startSession;
 
-// Placeholder для X-раздела: создаём поле 4x6
-(function initXField() {
-  const xField = document.getElementById('xField');
-  const totalCells = 24;
-  const unlockedCells = 12;
-
-  for (let i = 0; i < totalCells; i++) {
-    const cell = document.createElement('div');
-    cell.classList.add('xCell');
-    if (i >= unlockedCells) cell.classList.add('locked');
-    cell.innerText = i+1;
-    xField.appendChild(cell);
-  }
-})();
+// Placeholder для X-кнопок
+document.querySelectorAll('#xButtonsTop button, #xButtonsBottom button').forEach(btn => {
+  btn.addEventListener('click', () => alert('Действие будет доступно позже!'));
+});
 
 // Telegram WebApp
 if (window.Telegram && Telegram.WebApp) {
