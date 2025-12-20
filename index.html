@@ -61,7 +61,6 @@
       margin: 0 auto;
       color: #8fd3f4;
       text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
-      margin-left: -8px; /* Компенсация сдвига от свечения — теперь ровно по центру */
     }
 
     @keyframes softBreathe {
@@ -187,8 +186,8 @@
   let active = false;
 
   const diamondsPerLevel = 100;
-  const realDuration = 6500;
-  const displayedDuration = 5000;
+  const realDuration = 5500;     // Реально 5.5 секунд (быстрее!)
+  const displayedDuration = 5000; // Показываем как 5 секунд
   let startTime = 0;
   let timerInterval = null;
 
