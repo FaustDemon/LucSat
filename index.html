@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Шрифт Rajdhani, но легче -->
+  <!-- Шрифт Rajdhani -->
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500&display=swap" rel="stylesheet">
 
   <style>
@@ -38,22 +38,19 @@
       width: 100%;
     }
 
-    /* Таймер — спокойный, без вибрации/дёрганья */
+    /* Таймер — стабильный, без дёрганья */
     #timer {
       font-family: 'Rajdhani', sans-serif;
       font-size: 58px;
-      font-weight: 500; /* Легче */
-      margin-bottom: 80px; /* Ещё выше */
+      font-weight: 500;
+      margin-bottom: 80px; /* Выше алмаза */
       pointer-events: none;
       z-index: 10;
-      color: #8fd3f4;
-      background: linear-gradient(90deg, #8fd3f4, #84fab0);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 12px rgba(143, 211, 244, 0.4); /* Мягче свечение */
-      animation: softBreathe 3.5s infinite ease-in-out; /* Только opacity */
+      color: #8fd3f4; /* Твёрдый голубой цвет */
+      text-shadow: 0 0 15px rgba(143, 211, 244, 0.6); /* Мягкое свечение */
+      animation: softBreathe 3.5s infinite ease-in-out;
       letter-spacing: 8px;
-      width: 280px; /* Фикс ширины — нет сдвигов */
+      width: 280px; /* Фикс ширины */
       text-align: center;
     }
 
@@ -63,12 +60,10 @@
       100% { opacity: 0.85; }
     }
 
-    /* Розовый в конце — только opacity, без translate/scale */
+    /* Розовый в конце — твёрдый цвет + ускоренное дыхание */
     #timer.urgent {
-      background: linear-gradient(90deg, #ffb6c1, #ff69b4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 18px rgba(255, 105, 180, 0.6);
+      color: #ff69b4; /* Твёрдый розовый */
+      text-shadow: 0 0 25px rgba(255, 105, 180, 0.8);
       animation: urgentBreathe 1s infinite ease-in-out;
     }
 
