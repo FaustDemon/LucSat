@@ -52,12 +52,12 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 20px; /* сверху */
+  top: 220px;
   width: 100%;
   text-align: center;
   display: none;
   pointer-events: none;
-  z-index: 50;
+  z-index: 3;
 }
 
 #timer {
@@ -112,14 +112,8 @@ body {
   100% { transform: scale(1); }
 }
 
-#tapArea {
-  position: fixed;
-  inset: 0;
-  z-index: 100; 
-}
-
 .bottom {
-  margin-bottom: 80px; 
+  margin-bottom: 80px;
   text-align: center;
 }
 
@@ -136,6 +130,7 @@ button:disabled {
   background: #444;
 }
 
+/* Нижнее меню */
 #menu {
   position: fixed;
   bottom: 0;
@@ -161,6 +156,7 @@ button:disabled {
   font-weight: bold;
 }
 
+/* Разделы */
 .section {
   display: none;
   flex: 1;
@@ -212,9 +208,7 @@ button:disabled {
 <div id="tapSection" class="section">
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
-    <div id="tapArea"></div>
   </div>
-
   <div class="bottom">
     <button id="tapBtn">TAP</button>
   </div>
@@ -257,7 +251,6 @@ button:disabled {
 </div>
 
 <script>
-const tapArea = document.getElementById('tapArea');
 const tapBtn = document.getElementById('tapBtn');
 const diamond = document.getElementById('diamond');
 const totalDiamondsText = document.getElementById('totalDiamonds');
@@ -298,8 +291,10 @@ function updateUI() {
 
   document.getElementById('pickaxeLevel').innerText = pickaxeLevel;
   document.getElementById('pickaxeCost').innerText = (10 * pickaxeLevel).toFixed(3);
+
   document.getElementById('licenseLevel').innerText = licenseLevel;
   document.getElementById('licenseCost').innerText = (20 * licenseLevel).toFixed(3);
+
   document.getElementById('crystalLevel').innerText = crystalLevel;
   document.getElementById('passiveIncome').innerText = passiveIncome.toFixed(3);
 
@@ -327,7 +322,7 @@ setInterval(() => {
 
 document.querySelectorAll('.menu-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (active) return; 
+    if (active) return;
     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
     document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
     const section = document.getElementById(btn.dataset.section);
@@ -339,18 +334,12 @@ document.querySelectorAll('.menu-btn').forEach(btn => {
 function startSession() {
   if (active) return;
   active = true;
-
   tapBtn.disabled = true;
   timerContainer.style.display = 'block';
   timer.classList.remove('urgent');
-
   startTime = performance.now();
   timerInterval = setInterval(updateTimer, 30);
-
-  tapArea.style.pointerEvents = "auto"; 
-  tapArea.addEventListener('pointerdown', onPointerDown);
-  tapArea.addEventListener('pointerup', onPointerUp);
-  tapArea.addEventListener('pointercancel', onPointerUp);
+  activePointers.clear();
 }
 
 function endSession() {
@@ -359,13 +348,7 @@ function endSession() {
   timerContainer.style.display = 'none';
   activePointers.clear();
   diamond.style.setProperty('--hit-scale', 1);
-
   clearInterval(timerInterval);
-
-  tapArea.removeEventListener('pointerdown', onPointerDown);
-  tapArea.removeEventListener('pointerup', onPointerUp);
-  tapArea.removeEventListener('pointercancel', onPointerUp);
-  tapArea.style.pointerEvents = "none";
 }
 
 function updateTimer() {
@@ -379,38 +362,38 @@ function updateTimer() {
   if (remaining <= 0) endSession();
 }
 
-function onPointerDown(e) {
+document.body.addEventListener('pointerdown', (e) => {
   if (!active) return;
-  if (activePointers.size >= maxTouches) return;
+  e.preventDefault();
+  if (!activePointers.has(e.pointerId)) {
+    activePointers.add(e.pointerId);
+    const effectiveTouches = Math.min(activePointers.size, maxTouches);
+    const gain = tapValue * effectiveTouches;
 
-  activePointers.add(e.pointerId);
+    totalDiamonds += gain;
+    progress += gain;
 
-  const effectiveTouches = Math.min(activePointers.size, maxTouches);
-  const gain = tapValue * effectiveTouches;
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
 
-  totalDiamonds += gain;
-  progress += gain;
-
-  if (progress >= diamondsPerLevel) {
-    progress -= diamondsPerLevel;
-    level++;
+    diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+    updateUI();
   }
+});
 
-  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-  updateUI();
-}
-
-function onPointerUp(e) {
+document.body.addEventListener('pointerup', (e) => {
   activePointers.delete(e.pointerId);
   const effectiveTouches = Math.min(activePointers.size, maxTouches);
   diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
-}
+});
 
 tapBtn.onclick = startSession;
 
 document.getElementById('upgradePickaxe').onclick = () => {
   const cost = 10 * pickaxeLevel;
-  if (totalDiamonds >= cost) {
+  if (totalDiamonds >= cost && !active) {
     totalDiamonds -= cost;
     pickaxeLevel++;
     tapValue = baseTapValue + (pickaxeLevel - 1) * 0.01;
@@ -420,7 +403,7 @@ document.getElementById('upgradePickaxe').onclick = () => {
 
 document.getElementById('upgradeLicense').onclick = () => {
   const cost = 20 * licenseLevel;
-  if (totalDiamonds >= cost) {
+  if (totalDiamonds >= cost && !active) {
     totalDiamonds -= cost;
     licenseLevel++;
     passiveIncome += 0.001;
@@ -429,7 +412,7 @@ document.getElementById('upgradeLicense').onclick = () => {
 };
 
 document.getElementById('feedCrystal').onclick = () => {
-  if (totalDiamonds >= 5) {
+  if (totalDiamonds >= 5 && !active) {
     totalDiamonds -= 5;
     crystalLevel++;
     passiveIncome = 0.001 * crystalLevel;
@@ -438,17 +421,18 @@ document.getElementById('feedCrystal').onclick = () => {
 };
 
 document.getElementById('mergeCrystals').onclick = () => {
-  if (crystalLevel >= 2) {
+  if (crystalLevel >= 2 && !active) {
     crystalLevel++;
     passiveIncome = 0.001 * crystalLevel;
     updateUI();
     alert('Кристаллы слиты! Уровень повышен');
-  } else {
+  } else if (!active) {
     alert('Нужно минимум 2 уровня для слияния');
   }
 };
 
 document.getElementById('duelCrystals').onclick = () => {
+  if (active) return;
   const win = Math.random() > 0.5;
   if (win) {
     totalDiamonds += 10;
