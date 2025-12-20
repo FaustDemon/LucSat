@@ -21,15 +21,14 @@
 
     .top {
       margin-top: 20px;
-      text-align: center; /* Всё по центру */
+      text-align: center;
       width: 100%;
     }
 
-    /* Полоска прогресса по центру */
     .progress-container {
       width: 80%;
       max-width: 300px;
-      margin: 15px auto 0 auto; /* Центрирование */
+      margin: 15px auto 0 auto;
       background: #333;
       border-radius: 10px;
       overflow: hidden;
@@ -46,22 +45,23 @@
       margin-top: 10px;
     }
 
-    /* Таймер контейнер — по центру */
+    /* Таймер контейнер — строго по центру */
     #timerContainer {
       display: none;
-      margin: 20px auto;
-      text-align: center;
       width: 100%;
+      text-align: center;
+      margin: 20px 0;
     }
 
     #timer {
-      display: flex;
+      display: inline-flex; /* Чтобы центрировать как блок */
       justify-content: center;
       align-items: center;
       font-family: 'Courier New', Courier, monospace;
       font-size: 60px;
       font-weight: bold;
       animation: softBreathe 4s infinite ease-in-out;
+      margin: 0 auto; /* Финальный фикс центрирования */
     }
 
     .timer-part {
