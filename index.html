@@ -92,6 +92,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  width: 100%;
 }
 
 .diamond {
@@ -128,6 +130,7 @@ button:disabled {
   background: #444;
 }
 
+/* Нижнее меню */
 #menu {
   position: fixed;
   bottom: 0;
@@ -153,11 +156,13 @@ button:disabled {
   font-weight: bold;
 }
 
+/* Разделы */
 .section {
   display: none;
   flex: 1;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   padding: 20px;
   overflow-y: auto;
 }
@@ -166,42 +171,47 @@ button:disabled {
   display: flex;
 }
 
-/* === X SECTION ADD === */
+.card {
+  background: #333;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 350px;
+}
 
-.x-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+.card button {
+  margin-top: 10px;
   width: 100%;
-  max-width: 360px;
+}
+
+/* X Field Grid */
+#xField {
+  display: grid;
+  grid-template-columns: repeat(4, 60px);
+  grid-template-rows: repeat(6, 60px);
+  gap: 6px;
+  justify-content: center;
   margin-top: 20px;
 }
 
-.x-cell {
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  background: #1a1a1a;
-  border: 2px solid #333;
+.xCell {
+  width: 60px;
+  height: 60px;
+  background: #222;
+  border: 1px solid #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 12px;
+  border-radius: 6px;
 }
-
-.x-cell.closed {
-  background: #0e0e0e;
-  border: 2px dashed #444;
-  position: relative;
+.xCell.locked {
+  background: #111;
+  color: #444;
+  border-style: dashed;
 }
-
-.x-cell.closed::after {
-  content: "🔒";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.5;
-  font-size: 20px;
-}
-
-/* === END X SECTION ADD === */
-
 </style>
 </head>
 
@@ -212,6 +222,7 @@ button:disabled {
     <span id="totalDiamonds">0.000</span> 💎
   </div>
   <div id="level">LEVEL 1</div>
+
   <div class="progress-container">
     <div id="progressBar"></div>
   </div>
@@ -222,6 +233,7 @@ button:disabled {
   <div id="timer">00:05:00</div>
 </div>
 
+<!-- Секции -->
 <div id="tapSection" class="section">
   <div class="diamond-wrapper">
     <div id="diamond" class="diamond"></div>
@@ -231,38 +243,41 @@ button:disabled {
   </div>
 </div>
 
+<!-- Прокачка: coming soon -->
 <div id="upgradeSection" class="section">
   <h2>Прокачка</h2>
-  <div class="card"><p>Coming Soon</p></div>
-</div>
-
-<!-- === X SECTION ADD === -->
-<div id="xSection" class="section">
-  <h2>X</h2>
-  <div class="x-grid">
-    <!-- 12 открытых -->
-    <div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div>
-    <div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div>
-    <div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div><div class="x-cell"></div>
-
-    <!-- 12 закрытых -->
-    <div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div>
-    <div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div>
-    <div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div><div class="x-cell closed"></div>
+  <div class="card">
+    <p>Coming Soon</p>
   </div>
 </div>
-<!-- === END X SECTION ADD === -->
 
-<div id="farmSection" class="section">
-  <h2>Фарм</h2>
-  <div class="card"><p>Coming Soon</p></div>
+<!-- Раздел X -->
+<div id="xSection" class="section">
+  <h2>X</h2>
+  <div class="card">
+    <p>Поле X 4×6 (12 открытых / 12 закрытых)</p>
+    <div id="xField"></div>
+  </div>
 </div>
 
+<!-- Фарм: coming soon -->
+<div id="farmSection" class="section">
+  <h2>Фарм Кристаллов</h2>
+  <div class="card">
+    <p>Coming Soon</p>
+  </div>
+</div>
+
+<!-- Друзья -->
 <div id="friendsSection" class="section">
   <h2>Друзья</h2>
-  <div class="card"><p>Здесь будут друзья</p></div>
+  <div class="card">
+    <p>Здесь будут ваши друзья</p>
+    <button id="addFriend">Добавить друга</button>
+  </div>
 </div>
 
+<!-- Меню -->
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">Тап</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
@@ -272,7 +287,137 @@ button:disabled {
 </div>
 
 <script>
-/* ТВОЙ JS — НЕ ТРОНУТ */
+const CONFIG = {
+  tapValue: 0.037,        
+  sessionDuration: 5000,  
+  maxTouches: 5,          
+  urgentThreshold: 1000   
+};
+
+const tapBtn = document.getElementById('tapBtn');
+const diamond = document.getElementById('diamond');
+const totalDiamondsText = document.getElementById('totalDiamonds');
+const levelText = document.getElementById('level');
+const progressText = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+const timerContainer = document.getElementById('timerContainer');
+const timer = document.getElementById('timer');
+
+let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
+let level = parseInt(localStorage.getItem('level')) || 1;
+let progress = parseFloat(localStorage.getItem('progress')) || 0;
+
+const diamondsPerLevel = 100;
+
+let active = false;
+let startTime = 0;
+let timerInterval = null;
+const activePointers = new Set();
+
+function updateUI() {
+  totalDiamondsText.innerText = totalDiamonds.toFixed(3);
+  levelText.innerText = `LEVEL ${level}`;
+  progressText.innerText = `${progress.toFixed(3)} / ${diamondsPerLevel}`;
+  progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
+
+  localStorage.setItem('totalDiamonds', totalDiamonds);
+  localStorage.setItem('level', level);
+  localStorage.setItem('progress', progress);
+}
+
+updateUI();
+
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (active) return;
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+    const section = document.getElementById(btn.dataset.section);
+    section.style.display = 'flex';
+    btn.classList.add('active');
+  });
+});
+
+function startSession() {
+  if (active) return;
+  active = true;
+  tapBtn.disabled = true;
+  timerContainer.style.display = 'block';
+  timer.classList.remove('urgent');
+  startTime = performance.now();
+  timerInterval = setInterval(updateTimer, 50);
+  activePointers.clear();
+}
+
+function endSession() {
+  active = false;
+  tapBtn.disabled = false;
+  timerContainer.style.display = 'none';
+  activePointers.clear();
+  diamond.style.setProperty('--hit-scale', 1);
+  clearInterval(timerInterval);
+}
+
+function updateTimer() {
+  const remaining = Math.max(CONFIG.sessionDuration - (performance.now() - startTime), 0);
+  const s = Math.floor(remaining / 1000);
+  const ms = Math.floor((remaining % 1000) / 10);
+  timer.innerText = `00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+  if (remaining <= CONFIG.urgentThreshold) timer.classList.add('urgent');
+  if (remaining <= 0) endSession();
+}
+
+document.body.addEventListener('pointerdown', (e) => {
+  if (!active) return;
+  e.preventDefault();
+  if (!activePointers.has(e.pointerId)) {
+    activePointers.add(e.pointerId);
+    const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
+    const gain = CONFIG.tapValue * effectiveTouches;
+
+    totalDiamonds += gain;
+    progress += gain;
+
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
+
+    diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+    updateUI();
+  }
+});
+
+document.body.addEventListener('pointerup', (e) => {
+  activePointers.delete(e.pointerId);
+  const effectiveTouches = Math.min(activePointers.size, CONFIG.maxTouches);
+  diamond.style.setProperty('--hit-scale', 1 + effectiveTouches * 0.06);
+});
+
+tapBtn.onclick = startSession;
+
+// Placeholder для X-раздела: создаём поле 4x6
+(function initXField() {
+  const xField = document.getElementById('xField');
+  const totalCells = 24;
+  const unlockedCells = 12;
+
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    cell.classList.add('xCell');
+    if (i >= unlockedCells) cell.classList.add('locked');
+    cell.innerText = i+1;
+    xField.appendChild(cell);
+  }
+})();
+
+// Telegram WebApp
+if (window.Telegram && Telegram.WebApp) {
+    const tg = Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    tg.disableVerticalSwipes();
+}
 </script>
 
 </body>
