@@ -56,7 +56,7 @@
   /* --- Section X grid --- */
   #xSection .grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(6,1fr); gap:6px; width:100%; max-width:360px; height:100%; }
   #xSection .grid .cell {
-    background: linear-gradient(135deg, #8fd3f4, #84fab0); /* цвет изменён */
+    background: linear-gradient(135deg, #8fd3f4, #84fab0);
     border-radius:8px;
     display:flex;
     align-items:center;
@@ -98,7 +98,6 @@
       <p>Поле для будущих ячеек</p>
     </div>
     <div class="grid">
-      <!-- 24 пустые ячейки -->
       <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
       <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
       <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
@@ -149,7 +148,7 @@ const timer=document.getElementById('timer');
 function updateUI(){
   totalDiamondsText.innerText=totalDiamonds.toFixed(3);
   levelText.innerText=`LEVEL ${level}`;
-  progressBar.style.width=`${(progress/diamondsPerLevel)*100}%`;
+  progressBar.style.width=`${Math.min((progress/diamondsPerLevel)*100,100)}%`;
   localStorage.setItem('totalDiamonds',totalDiamonds);
   localStorage.setItem('level',level);
   localStorage.setItem('progress',progress);
@@ -158,7 +157,7 @@ updateUI();
 
 document.querySelectorAll('.menu-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    if(active)return;
+    if(active) return;
     document.querySelectorAll('.section').forEach(s=>s.style.display='none');
     document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(btn.dataset.section).style.display='flex';
@@ -176,17 +175,24 @@ function startSession(){
   timerInterval=setInterval(updateTimer,50);
   activePointers.clear();
 }
+
 function endSession(){
-  active=false; tapBtn.disabled=false; document.getElementById('timerContainer').style.display='none';
-  activePointers.clear(); diamond.style.setProperty('--hit-scale',1); clearInterval(timerInterval);
+  active=false;
+  tapBtn.disabled=false;
+  document.getElementById('timerContainer').style.display='none';
+  activePointers.clear();
+  diamond.style.setProperty('--hit-scale',1);
+  clearInterval(timerInterval);
 }
+
 function updateTimer(){
-  const remaining=Math.max(CONFIG.sessionDuration-(performance.now()-startTime),0);
-  const s=Math.floor(remaining/1000);
-  const ms=Math.floor((remaining%1000)/10);
-  timer.innerText=`00:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
-  if(remaining<=CONFIG.urgentThreshold) timer.classList.add('urgent');
-  if(remaining<=0) endSession();
+  const remaining = Math.max(CONFIG.sessionDuration - (performance.now() - startTime), 0);
+  const minutes = Math.floor(remaining / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  const ms = Math.floor((remaining % 1000) / 10);
+  timer.innerText = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+  if(remaining <= CONFIG.urgentThreshold) timer.classList.add('urgent');
+  if(remaining <= 0) endSession();
 }
 
 document.body.addEventListener('pointerdown',e=>{
@@ -205,12 +211,18 @@ document.body.addEventListener('pointerdown',e=>{
 document.body.addEventListener('pointerup',e=>{
   activePointers.delete(e.pointerId);
   const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
-  diamond.style.setProperty('--hit-scale',1+effectiveTouches*0.06);
+  diamond.style.setProperty('--hit-scale', active ? 1+effectiveTouches*0.06 : 1);
 });
+
 tapBtn.onclick=startSession;
 
 // Telegram WebApp
-if(window.Telegram && Telegram.WebApp){ const tg=Telegram.WebApp; tg.ready(); tg.expand(); tg.disableVerticalSwipes(); }
+if(window.Telegram && window.Telegram.WebApp){
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  tg.disableVerticalSwipes();
+}
 </script>
 </body>
 </html>
