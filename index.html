@@ -29,6 +29,7 @@ body {
 #level {
   font-size: 32px;
   font-weight: bold;
+  margin-top: 140px; /* место под таймер */
 }
 
 .progress-container {
@@ -52,12 +53,12 @@ body {
 
 #timerContainer {
   position: absolute;
-  top: 120px; /* гармоничное положение как в идеальном коде */
+  top: 60px; /* гармоничное место над уровнем */
   width: 100%;
   text-align: center;
   display: none;
   pointer-events: none;
-  z-index: 20;
+  z-index: 50; /* поверх всего */
 }
 
 #timer {
@@ -113,13 +114,13 @@ body {
 }
 
 #tapArea {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 50; /* поверх всего, чтобы весь экран был тап-зоной */
+  z-index: 100; /* всегда поверх всего во время сессии */
 }
 
 .bottom {
-  margin-bottom: 80px; /* место для меню */
+  margin-bottom: 80px; 
   text-align: center;
 }
 
@@ -136,7 +137,6 @@ button:disabled {
   background: #444;
 }
 
-/* Нижнее меню */
 #menu {
   position: fixed;
   bottom: 0;
@@ -162,7 +162,6 @@ button:disabled {
   font-weight: bold;
 }
 
-/* Разделы */
 .section {
   display: none;
   flex: 1;
@@ -352,6 +351,7 @@ function startSession() {
   startTime = performance.now();
   timerInterval = setInterval(updateTimer, 30);
 
+  tapArea.style.pointerEvents = "auto"; // весь экран тапаем
   tapArea.addEventListener('pointerdown', onPointerDown);
   tapArea.addEventListener('pointerup', onPointerUp);
   tapArea.addEventListener('pointercancel', onPointerUp);
@@ -369,6 +369,7 @@ function endSession() {
   tapArea.removeEventListener('pointerdown', onPointerDown);
   tapArea.removeEventListener('pointerup', onPointerUp);
   tapArea.removeEventListener('pointercancel', onPointerUp);
+  tapArea.style.pointerEvents = "none";
 }
 
 function updateTimer() {
