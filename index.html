@@ -45,7 +45,7 @@
       margin-top: 10px;
     }
 
-    /* Таймер контейнер — строго по центру */
+    /* Таймер контейнер — 100% центр */
     #timerContainer {
       display: none;
       width: 100%;
@@ -54,22 +54,22 @@
     }
 
     #timer {
-      display: inline-flex; /* Чтобы центрировать как блок */
-      justify-content: center;
-      align-items: center;
+      display: inline-block; /* Простой блок для идеального центрирования */
       font-family: 'Courier New', Courier, monospace;
       font-size: 60px;
       font-weight: bold;
       animation: softBreathe 4s infinite ease-in-out;
-      margin: 0 auto; /* Финальный фикс центрирования */
+      margin: 0 auto;
     }
 
     .timer-part {
+      display: inline-block;
       width: 60px;
       text-align: center;
     }
 
     .timer-colon {
+      display: inline-block;
       width: 20px;
       text-align: center;
     }
@@ -294,31 +294,4 @@
         diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
 
         updateUI();
-        localStorage.setItem('totalDiamonds', totalDiamonds);
-        localStorage.setItem('level', level);
-        localStorage.setItem('progress', progress);
-      }
-    };
-
-    tapArea.addEventListener('touchstart', handleTap, { passive: false });
-    tapArea.addEventListener('click', handleTap);
-
-    setTimeout(() => {
-      tapArea.removeEventListener('touchstart', handleTap);
-      tapArea.removeEventListener('click', handleTap);
-      clearInterval(timerInterval);
-      timerContainer.style.display = 'none';
-      active = false;
-      tapBtn.disabled = false;
-    }, realDuration);
-  }
-
-  tapBtn.onclick = startSession;
-
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
-</script>
-
-</body>
-</html>
+        localStorage.setItem('total
