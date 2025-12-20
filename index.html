@@ -35,14 +35,7 @@
       width: 120px;
       height: 120px;
       background: linear-gradient(135deg, #8fd3f4, #84fab0);
-      clip-path: polygon(
-        50% 0%,
-        90% 25%,
-        100% 60%,
-        50% 100%,
-        0% 60%,
-        10% 25%
-      );
+      clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
       animation: pulse 3s infinite ease-in-out;
       transition: transform 0.1s, filter 0.1s;
       filter: brightness(1);
@@ -81,7 +74,6 @@
     </div>
     <div id="level" style="font-size: 32px; font-weight: bold;">LEVEL 1</div>
     
-    <!-- Полоска прогресса -->
     <div style="width: 80%; max-width: 300px; background: #333; border-radius: 10px; overflow: hidden; margin: 15px 0;">
       <div id="progressBar" style="width: 0%; height: 12px; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.3s;"></div>
     </div>
@@ -99,6 +91,12 @@
   </div>
 
 <script>
+  // Авто-очистка для теста (добавь #clear в ссылку — и прогресс сбросится)
+  if (window.location.hash === '#clear') {
+    localStorage.clear();
+    window.location.hash = '';
+  }
+
   const diamond = document.getElementById('diamond');
   const tapBtn = document.getElementById('tapBtn');
   const progressText = document.getElementById('progress');
@@ -107,7 +105,6 @@
   const progressBar = document.getElementById('progressBar');
   const timerText = document.getElementById('timer');
 
-  // Загружаем сохранённый прогресс
   let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
   let level = parseInt(localStorage.getItem('level')) || 1;
   let progress = parseInt(localStorage.getItem('progress')) || 0;
@@ -116,7 +113,6 @@
 
   const diamondsPerLevel = 100;
 
-  // Обновляем весь интерфейс
   function updateUI() {
     totalDiamondsText.innerText = totalDiamonds.toLocaleString();
     levelText.innerText = `LEVEL ${level}`;
@@ -124,7 +120,7 @@
     progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
   }
 
-  updateUI(); // При открытии
+  updateUI();
 
   tapBtn.onclick = () => {
     if (active) return;
@@ -136,14 +132,12 @@
 
     timerText.innerText = '5 сек';
 
-    // Сброс эффектов алмаза
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
 
     const sessionTimer = setInterval(() => {
       timeLeft--;
       timerText.innerText = timeLeft > 0 ? timeLeft + ' сек' : '';
-
       if (timeLeft <= 0) {
         clearInterval(sessionTimer);
         active = false;
@@ -156,23 +150,19 @@
       if (!active) return;
 
       tapsInSession++;
-      totalDiamonds++;  // Общий счёт +
-      progress++;       // Прогресс к уровню +
+      totalDiamonds++;
+      progress++;
 
-      // Если набрали 100 — новый уровень
       if (progress >= diamondsPerLevel) {
         progress = 0;
         level++;
       }
 
-      // Эффекты на алмазе
       diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
       diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
 
-      // Обновляем экран
       updateUI();
 
-      // Сохраняем прогресс
       localStorage.setItem('totalDiamonds', totalDiamonds);
       localStorage.setItem('level', level);
       localStorage.setItem('progress', progress);
@@ -180,13 +170,11 @@
 
     diamond.addEventListener('click', tapListener);
 
-    // Убираем слушатель через 5 секунд
     setTimeout(() => {
       diamond.removeEventListener('click', tapListener);
     }, 5000);
   };
 
-  // Telegram Web App
   const tg = window.Telegram.WebApp;
   tg.ready();
   tg.expand();
