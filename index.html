@@ -107,15 +107,16 @@
   const progressBar = document.getElementById('progressBar');
   const timerText = document.getElementById('timer');
 
-  // Переменные состояния (ВАЖНО: active теперь здесь)
+  // Загружаем сохранённый прогресс
   let totalDiamonds = parseInt(localStorage.getItem('totalDiamonds')) || 0;
   let level = parseInt(localStorage.getItem('level')) || 1;
   let progress = parseInt(localStorage.getItem('progress')) || 0;
-  let active = false;  // ← Эта строка была потеряна, теперь вернул
+  let active = false;
   let timeLeft = 0;
 
   const diamondsPerLevel = 100;
 
+  // Обновляем весь интерфейс
   function updateUI() {
     totalDiamondsText.innerText = totalDiamonds.toLocaleString();
     levelText.innerText = `LEVEL ${level}`;
@@ -123,7 +124,7 @@
     progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
   }
 
-  updateUI();
+  updateUI(); // При открытии
 
   tapBtn.onclick = () => {
     if (active) return;
@@ -135,6 +136,7 @@
 
     timerText.innerText = '5 сек';
 
+    // Сброс эффектов алмаза
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
 
@@ -154,19 +156,23 @@
       if (!active) return;
 
       tapsInSession++;
-      totalDiamonds++;
-      progress++;
+      totalDiamonds++;  // Общий счёт +
+      progress++;       // Прогресс к уровню +
 
+      // Если набрали 100 — новый уровень
       if (progress >= diamondsPerLevel) {
         progress = 0;
         level++;
       }
 
+      // Эффекты на алмазе
       diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
       diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
 
+      // Обновляем экран
       updateUI();
 
+      // Сохраняем прогресс
       localStorage.setItem('totalDiamonds', totalDiamonds);
       localStorage.setItem('level', level);
       localStorage.setItem('progress', progress);
@@ -174,11 +180,13 @@
 
     diamond.addEventListener('click', tapListener);
 
+    // Убираем слушатель через 5 секунд
     setTimeout(() => {
       diamond.removeEventListener('click', tapListener);
     }, 5000);
   };
 
+  // Telegram Web App
   const tg = window.Telegram.WebApp;
   tg.ready();
   tg.expand();
