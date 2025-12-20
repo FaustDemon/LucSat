@@ -25,7 +25,15 @@
   #progressBar { height:100%; width:0%; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.2s; }
 
   /* --- Timer --- */
-  #timerContainer { position:fixed; top:90px; width:100%; text-align:center; pointer-events:none; z-index:11; }
+  #timerContainer { 
+    position:fixed; 
+    top:90px; 
+    width:100%; 
+    text-align:center; 
+    pointer-events:none; 
+    z-index:11; 
+    display:none; /* <- таймер скрыт по умолчанию */
+  }
   #timer { font-family:'Courier New', monospace; font-size:52px; font-weight:bold; color:#8fd3f4; text-shadow:0 0 12px rgba(143,211,244,0.5); animation: softBreathe 4s infinite ease-in-out; }
   #timer.urgent { color:#ff69b4; text-shadow:0 0 16px rgba(255,105,180,0.7); animation: urgentBreathe 1.2s infinite ease-in-out; }
   @keyframes softBreathe { 0%,100%{opacity:0.9} 50%{opacity:1} }
@@ -144,6 +152,7 @@ const totalDiamondsText=document.getElementById('totalDiamonds');
 const levelText=document.getElementById('level');
 const progressBar=document.getElementById('progressBar');
 const timer=document.getElementById('timer');
+const timerContainer=document.getElementById('timerContainer');
 
 function updateUI(){
   totalDiamondsText.innerText=totalDiamonds.toFixed(3);
@@ -169,7 +178,7 @@ function startSession(){
   if(active) return;
   active=true;
   tapBtn.disabled=true;
-  document.getElementById('timerContainer').style.display='block';
+  timerContainer.style.display='block';
   timer.classList.remove('urgent');
   startTime=performance.now();
   timerInterval=setInterval(updateTimer,50);
@@ -179,7 +188,7 @@ function startSession(){
 function endSession(){
   active=false;
   tapBtn.disabled=false;
-  document.getElementById('timerContainer').style.display='none';
+  timerContainer.style.display='none';
   activePointers.clear();
   diamond.style.setProperty('--hit-scale',1);
   clearInterval(timerInterval);
@@ -208,6 +217,7 @@ document.body.addEventListener('pointerdown',e=>{
     updateUI();
   }
 });
+
 document.body.addEventListener('pointerup',e=>{
   activePointers.delete(e.pointerId);
   const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
