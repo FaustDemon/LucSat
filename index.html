@@ -35,9 +35,9 @@
       width: 100%;
     }
 
-    /* Таймер — отдельные блоки для полной стабильности */
+    /* Таймер — скрыт по умолчанию */
     #timer {
-      display: flex;
+      display: none; /* Скрыт до старта сессии */
       justify-content: center;
       align-items: center;
       margin-bottom: 80px;
@@ -50,7 +50,7 @@
     }
 
     .timer-part {
-      width: 60px; /* Фиксированная ширина для каждой части */
+      width: 60px;
       text-align: center;
     }
 
@@ -70,7 +70,6 @@
       100% { opacity: 0.9; }
     }
 
-    /* Розовый в конце */
     #timer.urgent span {
       color: #ff69b4;
       text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
@@ -207,7 +206,8 @@
     const remainingDisplayedMs = Math.max(displayedDuration - displayedElapsed, 0);
 
     const totalSeconds = Math.floor(remainingDisplayedMs / 1000);
-    const hundredths = Math.round((remainingDisplayedMs % 1000) / 10);
+    // Точное округление, чтобы не было 100 на мгновение
+    const hundredths = Math.min(99, Math.round((remainingDisplayedMs % 1000) / 10));
 
     timerSeconds.innerText = totalSeconds.toString().padStart(2, '0');
     timerHundredths.innerText = hundredths.toString().padStart(2, '0');
@@ -223,6 +223,7 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timer.classList.remove('urgent');
+    timer.style.display = 'flex'; // Показываем таймер
     timerMinutes.innerText = '00';
     timerSeconds.innerText = '05';
     timerHundredths.innerText = '00';
@@ -241,14 +242,14 @@
 
       if (remainingRealMs <= 0) {
         clearInterval(timerInterval);
-        timer.innerHTML = ''; // Убираем таймер полностью
+        timer.style.display = 'none'; // Скрываем таймер
         active = false;
         tapBtn.disabled = false;
       }
     }, 30);
 
     const handleTap = (e) => {
-      if (!active) return;
+      if (!active) return; // Тапы только во время сессии
       e.preventDefault();
 
       const touches = e.touches ? e.touches.length : 1;
@@ -279,7 +280,7 @@
       tapArea.removeEventListener('touchstart', handleTap);
       tapArea.removeEventListener('click', handleTap);
       clearInterval(timerInterval);
-      timer.innerHTML = '';
+      timer.style.display = 'none';
       active = false;
       tapBtn.disabled = false;
     }, realDuration);
