@@ -2,53 +2,83 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Diamond Tap - v1.1.2</title>
+<title>Diamond Tap - v1.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(circle at top,#0b0f1a,#000);color:#fff;display:flex;flex-direction:column;}
-.top{position:fixed;top:0;left:0;width:100%;background:rgba(11,15,26,0.85);padding:12px 0;text-align:center;z-index:10;}
-.top #totalDiamonds{font-size:22px;font-weight:bold;margin-bottom:6px;display:block;}
-.top #level{font-size:28px;font-weight:bold;margin-bottom:8px;}
-.progress-container{width:80%;max-width:320px;margin:0 auto;background:#333;border-radius:12px;overflow:hidden;height:14px;}
-#progressBar{height:100%;width:0%;background:linear-gradient(90deg,#84fab0,#8fd3f4);transition:width 0.2s;}
-#timerContainer{position:fixed;top:90px;width:100%;text-align:center;pointer-events:none;z-index:11;display:none;}
-#timer{font-family:'Courier New',monospace;font-size:52px;font-weight:bold;color:#8fd3f4;text-shadow:0 0 12px rgba(143,211,244,0.5);animation:softBreathe 4s infinite ease-in-out;}
-#timer.urgent{color:#ff69b4;text-shadow:0 0 16px rgba(255,105,180,0.7);animation:urgentBreathe 1.2s infinite ease-in-out;}
-@keyframes softBreathe{0%,100%{opacity:0.9}50%{opacity:1}}
-@keyframes urgentBreathe{0%,100%{opacity:0.95}50%{opacity:1}}
-.main{flex:1;display:flex;flex-direction:column;margin-top:160px;margin-bottom:70px;}
-.section{flex:1;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:12px;overflow:hidden;width:100%;}
-.diamond-wrapper{flex:1;display:flex;align-items:center;justify-content:center;width:100%;}
-.diamond{width:120px;height:120px;background:linear-gradient(135deg,#8fd3f4,#84fab0);clip-path:polygon(50% 0%,90% 25%,100% 60%,50% 100%,0% 60%,10% 25%);animation:breathe 3.8s ease-in-out infinite;transform:scale(var(--hit-scale,1));transition:transform 0.12s;}
-@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
-.bottom{margin-top:16px;}
-button{padding:12px 28px;font-size:18px;border-radius:12px;border:none;background:#1f6bff;color:#fff;cursor:pointer;}
-button:disabled{background:#444;}
-#menu{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:rgba(0,0,0,0.85);padding:8px 0;z-index:12;}
-.menu-btn{background:transparent;border:none;color:#fff;font-size:16px;cursor:pointer;padding:8px;}
-.menu-btn.active{color:#8fd3f4;font-weight:bold;}
-.card{background:#222;border-radius:10px;padding:12px;margin:8px 0;width:90%;max-width:340px;text-align:center;}
-.card button{margin-top:10px;width:100%;}
+  /* --- Reset & body --- */
+  * { box-sizing: border-box; margin:0; padding:0; }
+  html, body { height:100%; font-family: Arial, sans-serif; background: radial-gradient(circle at top, #0b0f1a, #000); color:#fff; display:flex; flex-direction:column; }
 
-/* --- Раздел X: сетка --- */
-#xSection{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;overflow:hidden;}
-.grid-container{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(6,1fr);gap:6px;width:100%;max-width:360px;height:100%;margin-top:0;}
-.grid-cell{background:linear-gradient(135deg,#0066cc,#004080);border-radius:8px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;cursor:pointer;user-select:none;transition:transform 0.2s;}
-.grid-cell:hover{transform:scale(1.08);}
+  /* --- Header --- */
+  .top {
+    position: fixed;
+    top:0; left:0; width:100%;
+    background: rgba(11,15,26,0.85);
+    padding: 12px 0;
+    text-align:center;
+    z-index:10;
+  }
+  .top #totalDiamonds { font-size:22px; font-weight:bold; margin-bottom:6px; display:block; }
+  .top #level { font-size:28px; font-weight:bold; margin-bottom:8px; }
+  .progress-container { width:80%; max-width:320px; margin:0 auto; background:#333; border-radius:12px; overflow:hidden; height:14px; }
+  #progressBar { height:100%; width:0%; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.2s; }
+
+  /* --- Timer --- */
+  #timerContainer { position:fixed; top:90px; width:100%; text-align:center; pointer-events:none; z-index:11; }
+  #timer { font-family:'Courier New', monospace; font-size:52px; font-weight:bold; color:#8fd3f4; text-shadow:0 0 12px rgba(143,211,244,0.5); animation: softBreathe 4s infinite ease-in-out; }
+  #timer.urgent { color:#ff69b4; text-shadow:0 0 16px rgba(255,105,180,0.7); animation: urgentBreathe 1.2s infinite ease-in-out; }
+  @keyframes softBreathe { 0%,100%{opacity:0.9} 50%{opacity:1} }
+  @keyframes urgentBreathe { 0%,100%{opacity:0.95} 50%{opacity:1} }
+
+  /* --- Main sections --- */
+  .main { flex:1; display:flex; flex-direction:column; margin-top:160px; margin-bottom:70px; }
+  .section { flex:1; display:none; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px; overflow:hidden; width:100%; }
+
+  /* --- Diamond TAP --- */
+  .diamond-wrapper { flex:1; display:flex; align-items:center; justify-content:center; width:100%; }
+  .diamond { width:120px; height:120px; background:linear-gradient(135deg, #8fd3f4, #84fab0); clip-path: polygon(50% 0%,90% 25%,100% 60%,50% 100%,0% 60%,10% 25%); animation:breathe 3.8s ease-in-out infinite; transform:scale(var(--hit-scale,1)); transition: transform 0.12s; }
+  @keyframes breathe {0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+
+  .bottom { margin-top:16px; }
+  button { padding:12px 28px; font-size:18px; border-radius:12px; border:none; background:#1f6bff; color:#fff; cursor:pointer; }
+  button:disabled { background:#444; }
+
+  /* --- Menu --- */
+  #menu { position:fixed; bottom:0; width:100%; display:flex; justify-content:space-around; background: rgba(0,0,0,0.85); padding:8px 0; z-index:12; }
+  .menu-btn { background:transparent; border:none; color:#fff; font-size:16px; cursor:pointer; padding:8px; }
+  .menu-btn.active { color:#8fd3f4; font-weight:bold; }
+
+  /* --- Cards --- */
+  .card { background:#222; border-radius:10px; padding:12px; margin:8px 0; width:90%; max-width:340px; text-align:center; }
+  .card button { margin-top:10px; width:100%; }
+
+  /* --- Section X grid --- */
+  #xSection .grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(6,1fr); gap:6px; width:100%; max-width:360px; height:100%; }
+  #xSection .grid .cell {
+    background: linear-gradient(135deg, #8fd3f4, #84fab0); /* цвет изменён */
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    color:#000;
+  }
 </style>
 </head>
 <body>
 
+<!-- Top Info -->
 <div class="top">
   <span id="totalDiamonds">0.000</span>
   <div id="level">LEVEL 1</div>
   <div class="progress-container"><div id="progressBar"></div></div>
 </div>
 
+<!-- Timer -->
 <div id="timerContainer"><div id="timer">00:05:00</div></div>
 
+<!-- Main Sections -->
 <div class="main">
   <!-- TAP -->
   <div id="tapSection" class="section" style="display:flex;">
@@ -64,14 +94,17 @@ button:disabled{background:#444;}
 
   <!-- X Section -->
   <div id="xSection" class="section">
-    <div class="card"><button>Поле для будущих ячеек</button></div>
-    <div class="grid-container">
-      <div class="grid-cell">1</div><div class="grid-cell">2</div><div class="grid-cell">3</div><div class="grid-cell">4</div>
-      <div class="grid-cell">5</div><div class="grid-cell">6</div><div class="grid-cell">7</div><div class="grid-cell">8</div>
-      <div class="grid-cell">9</div><div class="grid-cell">10</div><div class="grid-cell">11</div><div class="grid-cell">12</div>
-      <div class="grid-cell">13</div><div class="grid-cell">14</div><div class="grid-cell">15</div><div class="grid-cell">16</div>
-      <div class="grid-cell">17</div><div class="grid-cell">18</div><div class="grid-cell">19</div><div class="grid-cell">20</div>
-      <div class="grid-cell">21</div><div class="grid-cell">22</div><div class="grid-cell">23</div><div class="grid-cell">24</div>
+    <div class="card">
+      <p>Поле для будущих ячеек</p>
+    </div>
+    <div class="grid">
+      <!-- 24 пустые ячейки -->
+      <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+      <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+      <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+      <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
+      <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
+      <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
     </div>
   </div>
 
@@ -88,6 +121,7 @@ button:disabled{background:#444;}
   </div>
 </div>
 
+<!-- Menu -->
 <div id="menu">
   <button class="menu-btn active" data-section="tapSection">TAP</button>
   <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
@@ -97,16 +131,13 @@ button:disabled{background:#444;}
 </div>
 
 <script>
-const CONFIG={tapValue:0.037,sessionDuration:5000,maxTouches:5,urgentThreshold:1000};
-let totalDiamonds=parseFloat(localStorage.getItem('totalDiamonds'))||0;
-let level=parseInt(localStorage.getItem('level'))||1;
-let progress=parseFloat(localStorage.getItem('progress'))||0;
-const diamondsPerLevel=100;
-
-let active=false;
-let startTime=0;
-let timerInterval=null;
-const activePointers=new Set();
+const CONFIG = { tapValue:0.037, sessionDuration:5000, maxTouches:5, urgentThreshold:1000 };
+let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
+let level = parseInt(localStorage.getItem('level')) || 1;
+let progress = parseFloat(localStorage.getItem('progress')) || 0;
+const diamondsPerLevel = 100;
+let active=false, startTime=0, timerInterval=null;
+const activePointers = new Set();
 
 const tapBtn=document.getElementById('tapBtn');
 const diamond=document.getElementById('diamond');
@@ -125,7 +156,6 @@ function updateUI(){
 }
 updateUI();
 
-// Menu
 document.querySelectorAll('.menu-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(active)return;
@@ -136,9 +166,8 @@ document.querySelectorAll('.menu-btn').forEach(btn=>{
   });
 });
 
-// TAP session
 function startSession(){
-  if(active)return;
+  if(active) return;
   active=true;
   tapBtn.disabled=true;
   document.getElementById('timerContainer').style.display='block';
@@ -148,11 +177,8 @@ function startSession(){
   activePointers.clear();
 }
 function endSession(){
-  active=false; tapBtn.disabled=false;
-  document.getElementById('timerContainer').style.display='none';
-  activePointers.clear();
-  diamond.style.setProperty('--hit-scale',1);
-  clearInterval(timerInterval);
+  active=false; tapBtn.disabled=false; document.getElementById('timerContainer').style.display='none';
+  activePointers.clear(); diamond.style.setProperty('--hit-scale',1); clearInterval(timerInterval);
 }
 function updateTimer(){
   const remaining=Math.max(CONFIG.sessionDuration-(performance.now()-startTime),0);
@@ -164,14 +190,13 @@ function updateTimer(){
 }
 
 document.body.addEventListener('pointerdown',e=>{
-  if(!active)return;
+  if(!active) return;
   e.preventDefault();
   if(!activePointers.has(e.pointerId)){
     activePointers.add(e.pointerId);
     const effectiveTouches=Math.min(activePointers.size,CONFIG.maxTouches);
     const gain=CONFIG.tapValue*effectiveTouches;
-    totalDiamonds+=gain;
-    progress+=gain;
+    totalDiamonds+=gain; progress+=gain;
     if(progress>=diamondsPerLevel){progress-=diamondsPerLevel; level++;}
     diamond.style.setProperty('--hit-scale',1+effectiveTouches*0.06);
     updateUI();
@@ -185,14 +210,8 @@ document.body.addEventListener('pointerup',e=>{
 tapBtn.onclick=startSession;
 
 // Telegram WebApp
-if(window.Telegram&&Telegram.WebApp){
-  const tg=Telegram.WebApp;
-  tg.ready();
-  tg.expand();
-  tg.disableVerticalSwipes();
-}
+if(window.Telegram && Telegram.WebApp){ const tg=Telegram.WebApp; tg.ready(); tg.expand(); tg.disableVerticalSwipes(); }
 </script>
-
 </body>
 </html>
 
