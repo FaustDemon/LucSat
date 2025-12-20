@@ -21,16 +21,37 @@
 
     .top {
       margin-top: 20px;
-      text-align: center;
+      text-align: center; /* Всё по центру */
       width: 100%;
     }
 
-    /* Новый блок для таймера — прямо под топом */
+    /* Полоска прогресса по центру */
+    .progress-container {
+      width: 80%;
+      max-width: 300px;
+      margin: 15px auto 0 auto; /* Центрирование */
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progressBar {
+      height: 12px;
+      background: linear-gradient(90deg, #84fab0, #8fd3f4);
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    #progress {
+      margin-top: 10px;
+    }
+
+    /* Таймер контейнер — по центру */
     #timerContainer {
-      display: none; /* Скрыт до старта */
-      margin-top: 20px;
-      margin-bottom: 20px;
+      display: none;
+      margin: 20px auto;
       text-align: center;
+      width: 100%;
     }
 
     #timer {
@@ -141,14 +162,13 @@
     </div>
     <div id="level" style="font-size: 32px; font-weight: bold;">LEVEL 1</div>
     
-    <div style="width: 80%; max-width: 300px; background: #333; border-radius: 10px; overflow: hidden; margin: 15px 0;">
-      <div id="progressBar" style="width: 0%; height: 12px; background: linear-gradient(90deg, #84fab0, #8fd3f4); transition: width 0.3s;"></div>
+    <div class="progress-container">
+      <div id="progressBar"></div>
     </div>
     
     <div id="progress">0 / 100</div>
   </div>
 
-  <!-- Таймер в отдельном контейнере под топом -->
   <div id="timerContainer">
     <div id="timer">
       <span class="timer-part" id="timerMinutes">00</span>
@@ -230,7 +250,7 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timer.classList.remove('urgent');
-    timerContainer.style.display = 'block'; // Показываем контейнер с таймером
+    timerContainer.style.display = 'block';
     timerMinutes.innerText = '00';
     timerSeconds.innerText = '05';
     timerHundredths.innerText = '00';
