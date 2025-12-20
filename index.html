@@ -23,6 +23,8 @@
     .top {
       margin-top: 20px;
       text-align: center;
+      width: 100%;
+      position: relative;
     }
 
     .diamond-wrapper {
@@ -34,11 +36,11 @@
       width: 100%;
     }
 
-    /* Таймер выше алмаза, не перекрывает его */
+    /* Таймер высоко вверху, под полоской прогресса */
     #timer {
       display: none;
       position: absolute;
-      top: 30%; /* Выше центра, над алмазом */
+      top: 120px; /* Прямо под полоской прогресса */
       left: 50%;
       transform: translateX(-50%);
       justify-content: center;
@@ -224,7 +226,7 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timer.classList.remove('urgent');
-    timer.style.display = 'flex'; // Показываем выше алмаза
+    timer.style.display = 'flex';
     timerMinutes.innerText = '00';
     timerSeconds.innerText = '05';
     timerHundredths.innerText = '00';
