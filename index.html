@@ -16,7 +16,7 @@
       flex-direction: column;
       align-items: center;
       height: 100vh;
-      touch-action: manipulation;
+      touch-action: none;
     }
 
     .top {
@@ -37,46 +37,19 @@
     #progressBar {
       height: 12px;
       background: linear-gradient(90deg, #84fab0, #8fd3f4);
-      transition: width 0.3s;
       width: 0%;
-    }
-
-    #progress {
-      margin-top: 10px;
     }
 
     #timerContainer {
       display: none;
-      width: 100%;
       text-align: center;
       margin: 20px 0;
     }
 
     #timer {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 60px;
-      font-weight: bold;
+      font-family: monospace;
+      font-size: 56px;
       color: #8fd3f4;
-      text-shadow: 0 0 10px rgba(143, 211, 244, 0.5);
-      animation: softBreathe 4s infinite ease-in-out;
-    }
-
-    @keyframes softBreathe {
-      0% { opacity: 0.9; }
-      50% { opacity: 1; }
-      100% { opacity: 0.9; }
-    }
-
-    #timer.urgent {
-      color: #ff69b4;
-      text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
-      animation: urgentBreathe 1.2s infinite ease-in-out;
-    }
-
-    @keyframes urgentBreathe {
-      0% { opacity: 0.95; }
-      50% { opacity: 1; }
-      100% { opacity: 0.95; }
     }
 
     .diamond-wrapper {
@@ -93,28 +66,26 @@
       height: 120px;
       background: linear-gradient(135deg, #8fd3f4, #84fab0);
       clip-path: polygon(50% 0%, 90% 25%, 100% 60%, 50% 100%, 0% 60%, 10% 25%);
-      animation: pulse 3s infinite ease-in-out;
       transition: transform 0.1s, filter 0.1s;
-      filter: brightness(1);
       z-index: 2;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    #tapArea {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: auto;
     }
 
     .bottom {
       margin-bottom: 30px;
-      text-align: center;
     }
 
     button {
       padding: 14px 28px;
       font-size: 18px;
-      border: none;
       border-radius: 12px;
+      border: none;
       background: #1f6bff;
       color: #fff;
     }
@@ -122,27 +93,17 @@
     button:disabled {
       background: #444;
     }
-
-    #tapArea {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-    }
   </style>
 </head>
 
 <body>
 
   <div class="top">
-    <div style="font-size: 24px; margin-bottom: 10px;">
-      <span id="totalDiamonds">0.00</span> 💎
-    </div>
-    <div id="level" style="font-size: 32px; font-weight: bold;">LEVEL 1</div>
-
+    <div><span id="totalDiamonds">0.00</span> 💎</div>
+    <div id="level">LEVEL 1</div>
     <div class="progress-container">
       <div id="progressBar"></div>
     </div>
-
     <div id="progress">0.00 / 100</div>
   </div>
 
@@ -160,73 +121,108 @@
   </div>
 
 <script>
-  if (window.location.hash === '#clear') {
-    localStorage.clear();
-    window.location.hash = '';
-  }
-
   const tapArea = document.getElementById('tapArea');
   const tapBtn = document.getElementById('tapBtn');
   const diamond = document.getElementById('diamond');
-  const progressText = document.getElementById('progress');
-  const levelText = document.getElementById('level');
   const totalDiamondsText = document.getElementById('totalDiamonds');
+  const levelText = document.getElementById('level');
+  const progressText = document.getElementById('progress');
   const progressBar = document.getElementById('progressBar');
   const timerContainer = document.getElementById('timerContainer');
   const timer = document.getElementById('timer');
 
-  let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
-  let level = parseInt(localStorage.getItem('level')) || 1;
-  let progress = parseFloat(localStorage.getItem('progress')) || 0;
+  let totalDiamonds = 0;
+  let level = 1;
+  let progress = 0;
 
   let active = false;
-  let timerInterval = null;
   let startTime = 0;
-  let tapsInSession = 0;
+  let timerInterval = null;
 
   const diamondsPerLevel = 100;
   const tapValue = 0.08;
-  const maxTouches = 5;
   const sessionDuration = 5000;
+  const maxPointers = 5;
+
+  const activePointers = new Set();
 
   function updateUI() {
     totalDiamondsText.innerText = totalDiamonds.toFixed(2);
     levelText.innerText = `LEVEL ${level}`;
     progressText.innerText = `${progress.toFixed(2)} / ${diamondsPerLevel}`;
-    progressBar.style.width = `${Math.min(100, (progress / diamondsPerLevel) * 100)}%`;
+    progressBar.style.width = `${(progress / diamondsPerLevel) * 100}%`;
   }
-
-  updateUI();
 
   function startSession() {
     if (active) return;
 
     active = true;
-    tapsInSession = 0;
     tapBtn.disabled = true;
-
-    diamond.style.transform = 'scale(1)';
-    diamond.style.filter = 'brightness(1)';
-    timer.classList.remove('urgent');
     timerContainer.style.display = 'block';
 
     startTime = performance.now();
     timerInterval = setInterval(updateTimer, 30);
 
-    tapArea.addEventListener('touchstart', handleTap, { passive: false });
+    tapArea.addEventListener('pointerdown', onPointerDown);
+    tapArea.addEventListener('pointerup', onPointerUp);
+    tapArea.addEventListener('pointercancel', onPointerUp);
   }
 
   function endSession() {
-    if (!active) return;
-
     active = false;
     tapBtn.disabled = false;
+    timerContainer.style.display = 'none';
+    activePointers.clear();
 
     clearInterval(timerInterval);
-    timerContainer.style.display = 'none';
 
-    tapArea.removeEventListener('touchstart', handleTap);
+    tapArea.removeEventListener('pointerdown', onPointerDown);
+    tapArea.removeEventListener('pointerup', onPointerUp);
+    tapArea.removeEventListener('pointercancel', onPointerUp);
   }
 
-  function updat
+  function updateTimer() {
+    const remaining = Math.max(sessionDuration - (performance.now() - startTime), 0);
+    const s = Math.floor(remaining / 1000);
+    const ms = Math.floor((remaining % 1000) / 10);
+    timer.innerText = `00:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
+
+    if (remaining <= 0) endSession();
+  }
+
+  function onPointerDown(e) {
+    if (!active) return;
+    if (activePointers.size >= maxPointers) return;
+
+    activePointers.add(e.pointerId);
+
+    const gain = tapValue;
+    totalDiamonds += gain;
+    progress += gain;
+
+    if (progress >= diamondsPerLevel) {
+      progress -= diamondsPerLevel;
+      level++;
+    }
+
+    const scale = Math.min(1.4, 1 + activePointers.size * 0.05);
+    diamond.style.transform = `scale(${scale})`;
+
+    updateUI();
+  }
+
+  function onPointerUp(e) {
+    activePointers.delete(e.pointerId);
+  }
+
+  tapBtn.onclick = startSession;
+
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  tg.disableVerticalSwipes();
+</script>
+
+</body>
+</html>
 
