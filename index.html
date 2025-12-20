@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- Крутой шрифт для таймера -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+
   <style>
     body {
       margin: 0;
@@ -35,33 +38,45 @@
       width: 100%;
     }
 
+    /* Эпичный таймер */
     #timer {
-      font-size: 64px;
-      font-weight: bold;
-      margin-bottom: 30px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 80px;
+      font-weight: 700;
+      margin-bottom: 40px;
       pointer-events: none;
       z-index: 10;
-      color: rgba(135, 206, 255, 0.95);
-      text-shadow: 0 0 20px rgba(135, 206, 255, 0.6);
-      animation: breathe 2.5s infinite ease-in-out;
+      color: #84fab0;
+      background: linear-gradient(90deg, #84fab0, #8fd3f4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(132, 250, 176, 0.8);
+      animation: breathe 2.8s infinite ease-in-out;
+      letter-spacing: 4px;
+      /* Чтобы не дёргался при смене цифр */
+      width: 300px;
+      text-align: center;
     }
 
     @keyframes breathe {
-      0% { opacity: 0.7; }
+      0% { opacity: 0.85; }
       50% { opacity: 1; }
-      100% { opacity: 0.7; }
+      100% { opacity: 0.85; }
     }
 
+    /* Розовый в конце + сильное свечение */
     #timer.urgent {
-      color: rgba(255, 182, 193, 1);
-      text-shadow: 0 0 30px rgba(255, 182, 193, 0.9);
-      animation: urgentBreathe 0.8s infinite ease-in-out;
+      background: linear-gradient(90deg, #ffb6c1, #ff69b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(255, 105, 180, 1);
+      animation: urgentBreathe 0.7s infinite ease-in-out;
     }
 
     @keyframes urgentBreathe {
-      0% { opacity: 0.8; }
-      50% { opacity: 1; }
-      100% { opacity: 0.8; }
+      0% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0.9; transform: scale(1); }
     }
 
     .diamond {
@@ -156,8 +171,8 @@
   let active = false;
 
   const diamondsPerLevel = 100;
-  const realDuration = 8000;  // Реальные 8 секунд
-  const displayedDuration = 5000;  // Показываем как 5 секунд
+  const realDuration = 8000;     // Реально 8 секунд
+  const displayedDuration = 5000; // Показываем как 5 секунд
   let startTime = 0;
   let timerInterval = null;
 
@@ -170,7 +185,6 @@
 
   updateUI();
 
-  // Показываем таймер как 5 секунд, но растягиваем на 8 реальных
   function formatDisplayedTime(elapsedRealMs) {
     const progressRatio = elapsedRealMs / realDuration;
     const displayedElapsed = progressRatio * displayedDuration;
@@ -191,7 +205,7 @@
     diamond.style.transform = 'scale(1)';
     diamond.style.filter = 'brightness(1)';
     timerText.classList.remove('urgent');
-    timerText.innerText = '00:05:00'; // Начинаем с 5 секунд
+    timerText.innerText = '00:05:00';
 
     startTime = performance.now();
 
@@ -201,8 +215,8 @@
 
       timerText.innerText = formatDisplayedTime(elapsedRealMs);
 
-      // Розовый в "последние" 1.5 визуальные секунды (примерно последние 2.4 реальные секунды)
-      if (remainingRealMs <= (realDuration * 1.5 / 5)) {
+      // Розовый, когда визуально ~1.5 секунды осталось
+      if (remainingRealMs <= realDuration * (1.5 / 5)) {
         timerText.classList.add('urgent');
       }
 
@@ -212,10 +226,52 @@
         active = false;
         tapBtn.disabled = false;
       }
-    }, 30);
+    }, 30); // Плавное обновление
 
     const handleTap = (e) => {
       if (!active) return;
       e.preventDefault();
 
-      const touches = e.touches ? e.touches
+      const touches = e.touches ? e.touches.length : 1;
+      for (let i = 0; i < touches; i++) {
+        tapsInSession++;
+        totalDiamonds++;
+        progress++;
+
+        if (progress >= diamondsPerLevel) {
+          progress = 0;
+          level++;
+        }
+
+        diamond.style.transform = `scale(${1 + tapsInSession * 0.005})`;
+        diamond.style.filter = `brightness(${1 + tapsInSession * 0.03})`;
+
+        updateUI();
+        localStorage.setItem('totalDiamonds', totalDiamonds);
+        localStorage.setItem('level', level);
+        localStorage.setItem('progress', progress);
+      }
+    };
+
+    tapArea.addEventListener('touchstart', handleTap, { passive: false });
+    tapArea.addEventListener('click', handleTap);
+
+    setTimeout(() => {
+      tapArea.removeEventListener('touchstart', handleTap);
+      tapArea.removeEventListener('click', handleTap);
+      clearInterval(timerInterval);
+      timerText.innerText = '';
+      active = false;
+      tapBtn.disabled = false;
+    }, realDuration);
+  }
+
+  tapBtn.onclick = startSession;
+
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+</script>
+
+</body>
+</html>
