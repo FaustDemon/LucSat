@@ -260,10 +260,10 @@ button:disabled {
 
 <script>
 const CONFIG = {
-  tapValue: 0.037,
-  sessionDuration: 5000,
-  maxTouches: 5,
-  urgentThreshold: 1000
+  tapValue: 0.037,        // Алмазы за один TAP
+  sessionDuration: 5000,  // Длительность сессии TAP в миллисекундах
+  maxTouches: 5,          // Максимальное количество касаний, учитываемое для бонуса
+  urgentThreshold: 1000   // Время до конца сессии, когда таймер становится "urgent"
 };
 
 const tapBtn = document.getElementById('tapBtn');
@@ -317,7 +317,7 @@ function startSession() {
   timerContainer.style.display = 'block';
   timer.classList.remove('urgent');
   startTime = performance.now();
-  timerInterval = setInterval(updateTimer, 50); // обновление 50ms
+  timerInterval = setInterval(updateTimer, 50); // обновление каждые 50ms
   activePointers.clear();
 }
 
