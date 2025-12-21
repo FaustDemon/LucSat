@@ -43,7 +43,7 @@
   .main { flex:1; display:flex; flex-direction:column; margin-top:160px; margin-bottom:70px; }
   .section { 
     flex:1; 
-    min-height:0; /* важно для корректного scroll в flex */
+    min-height:0; 
     display:none; 
     flex-direction:column; 
     align-items:center; 
@@ -71,15 +71,24 @@
   .card { background:#222; border-radius:10px; padding:12px; margin:8px 0; width:90%; max-width:340px; text-align:center; }
   .card button { margin-top:10px; width:100%; }
 
-  /* --- Section X table --- */
-  #xSection table { width:90%; max-width:360px; border-collapse: separate; border-spacing:6px; }
+  /* --- Section X table с квадратными ячейками --- */
+  #xSection table {
+    width:90%;
+    max-width:360px;
+    border-collapse: separate;
+    border-spacing:6px;
+    table-layout: fixed; /* равные колонки */
+  }
   #xSection td.cell {
     background: linear-gradient(135deg, #8fd3f4, #84fab0);
     border-radius:8px;
     text-align:center;
     font-size:16px;
     color:#000;
-    padding:12px 0;
+    width: calc((100% - 3*6px)/4); /* 4 ячейки в ряду, вычитаем spacing */
+    height: 0;
+    padding-top: calc((100% - 3*6px)/4); /* квадратная высота = ширине */
+    box-sizing: border-box;
   }
 </style>
 </head>
