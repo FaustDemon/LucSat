@@ -32,7 +32,7 @@
     text-align:center; 
     pointer-events:none; 
     z-index:11; 
-    display:none; /* <- таймер скрыт по умолчанию */
+    display:none; /* <- скрыт по умолчанию */
   }
   #timer { font-family:'Courier New', monospace; font-size:52px; font-weight:bold; color:#8fd3f4; text-shadow:0 0 12px rgba(143,211,244,0.5); animation: softBreathe 4s infinite ease-in-out; }
   #timer.urgent { color:#ff69b4; text-shadow:0 0 16px rgba(255,105,180,0.7); animation: urgentBreathe 1.2s infinite ease-in-out; }
@@ -232,6 +232,7 @@ if(window.Telegram && window.Telegram.WebApp){
   tg.ready();
   tg.expand();
   tg.disableVerticalSwipes();
+  if (tg.showHeader) tg.showHeader(false); // <- скрываем заголовок бота
 }
 </script>
 </body>
