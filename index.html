@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+  /* --- Reset & body --- */
   * { box-sizing: border-box; margin:0; padding:0; }
   html, body { height:100%; font-family: Arial, sans-serif; background: radial-gradient(circle at top, #0b0f1a, #000); color:#fff; display:flex; flex-direction:column; }
 
@@ -42,13 +43,14 @@
   .main { flex:1; display:flex; flex-direction:column; margin-top:160px; margin-bottom:70px; }
   .section { 
     flex:1; 
+    min-height:0; /* важно для корректного scroll в flex */
     display:none; 
     flex-direction:column; 
     align-items:center; 
     justify-content:flex-start; 
     padding:12px; 
     width:100%; 
-    overflow-y: auto; 
+    overflow-y:auto; 
   }
 
   /* --- Diamond TAP --- */
@@ -70,15 +72,8 @@
   .card button { margin-top:10px; width:100%; }
 
   /* --- Section X grid --- */
-  #xSection {
-    flex:1 1 auto;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    overflow-y:auto; /* секция скроллится при переполнении */
-  }
   #xSection .grid { 
-    display: grid;
+    display: none; /* скрыт по умолчанию */
     grid-template-columns: repeat(4, 1fr); 
     gap:6px; 
     width:100%; 
@@ -111,7 +106,7 @@
 <!-- Main Sections -->
 <div class="main">
   <!-- TAP -->
-  <div id="tapSection" class="section" style="display:flex;">
+  <div id="tapSection" class="section">
     <div class="diamond-wrapper"><div id="diamond" class="diamond"></div></div>
     <div class="bottom"><button id="tapBtn">TAP</button></div>
   </div>
@@ -263,6 +258,14 @@ if(window.Telegram && window.Telegram.WebApp){
   tg.disableVerticalSwipes();
   if (tg.showHeader) tg.showHeader(false);
 }
+
+// --- Показываем TAP по умолчанию корректно ---
+document.addEventListener('DOMContentLoaded', () => {
+  const firstBtn = document.querySelector('.menu-btn.active');
+  if(firstBtn){
+    firstBtn.click(); // открываем TAP
+  }
+});
 </script>
 </body>
 </html>
