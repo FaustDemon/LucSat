@@ -72,12 +72,18 @@
   .card button { margin-top:10px; width:100%; }
 
   /* --- Section X grid --- */
-  #xSection .grid { 
-    display: none; /* скрыт по умолчанию */
-    grid-template-columns: repeat(4, 1fr); 
-    gap:6px; 
-    width:100%; 
-    max-width:360px; 
+  #xSection .grid-container {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    width:100%;
+  }
+  #xSection .grid {
+    flex:1;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:6px;
+    overflow:auto;
   }
   #xSection .grid .cell {
     background: linear-gradient(135deg, #8fd3f4, #84fab0);
@@ -87,7 +93,7 @@
     justify-content:center;
     font-size:16px;
     color:#000;
-    aspect-ratio: 1 / 1; /* квадратные ячейки */
+    aspect-ratio: 1 / 1;
   }
 </style>
 </head>
@@ -122,13 +128,15 @@
     <div class="card">
       <p>Поле для будущих ячеек</p>
     </div>
-    <div class="grid">
-      <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
-      <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
-      <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
-      <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
-      <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
-      <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
+    <div class="grid-container">
+      <div class="grid">
+        <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+        <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+        <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+        <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
+        <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
+        <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
+      </div>
     </div>
   </div>
 
