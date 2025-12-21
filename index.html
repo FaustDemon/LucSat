@@ -2,54 +2,38 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Diamond Tap – immersive</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Diamond Tap - v1.0</title>
+
+<!-- ВАЖНО: viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-/* ===== RESET ===== */
-* { box-sizing:border-box; margin:0; padding:0; }
+* { box-sizing: border-box; margin:0; padding:0; }
 
 html, body {
-  width:100%;
   height:100%;
   font-family: Arial, sans-serif;
   background: radial-gradient(circle at top, #0b0f1a, #000);
   color:#fff;
-  overflow:hidden;
-}
-
-/* ===== ROOT VIEWPORT ===== */
-.app {
-  height: var(--tg-vh, 100vh);
   display:flex;
   flex-direction:column;
+  padding-top: env(safe-area-inset-top) !important;
+  margin-top:0 !important;
 }
 
-/* ===== TOP BAR (IMMERSIVE) ===== */
+/* --- Header --- */
 .top {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(11,15,26,0.92);
-  backdrop-filter: blur(6px);
-  padding: 14px 0 12px;
+  position: fixed;
+  top:0; left:0; width:100%;
+  background: rgba(11,15,26,0.95);
+  padding: 12px 0;
   text-align:center;
+  z-index:20;
 }
-
-#totalDiamonds {
-  display:block;
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:6px;
-}
-
-#level {
-  font-size:26px;
-  font-weight:bold;
-  margin-bottom:8px;
-}
-
+.top #totalDiamonds { font-size:22px; font-weight:bold; margin-bottom:6px; display:block; }
+.top #level { font-size:28px; font-weight:bold; margin-bottom:8px; }
 .progress-container {
   width:80%;
   max-width:320px;
@@ -59,250 +43,311 @@ html, body {
   overflow:hidden;
   height:14px;
 }
-
 #progressBar {
   height:100%;
   width:0%;
-  background: linear-gradient(90deg,#84fab0,#8fd3f4);
+  background: linear-gradient(90deg, #84fab0, #8fd3f4);
+  transition: width 0.2s;
 }
 
-/* ===== TIMER ===== */
+/* --- Timer --- */
 #timerContainer {
-  display:none;
+  position:fixed;
+  top:90px;
+  width:100%;
   text-align:center;
-  margin-top:10px;
+  pointer-events:none;
+  height:0;
+  z-index:19;
+  display:none;
 }
-
 #timer {
-  font-family:monospace;
-  font-size:46px;
+  font-family:'Courier New', monospace;
+  font-size:52px;
+  font-weight:bold;
   color:#8fd3f4;
+  text-shadow:0 0 12px rgba(143,211,244,0.5);
+  animation: softBreathe 4s infinite ease-in-out;
 }
-
 #timer.urgent {
   color:#ff69b4;
+  text-shadow:0 0 16px rgba(255,105,180,0.7);
+  animation: urgentBreathe 1.2s infinite ease-in-out;
 }
+@keyframes softBreathe { 0%,100%{opacity:0.9} 50%{opacity:1} }
+@keyframes urgentBreathe { 0%,100%{opacity:0.95} 50%{opacity:1} }
 
-/* ===== MAIN ===== */
+/* --- Main --- */
 .main {
   flex:1;
-  overflow-y:auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom:90px;
-}
-
-.section {
-  display:none;
-  min-height:100%;
-  padding:16px;
-}
-
-.section.active {
   display:flex;
   flex-direction:column;
+  margin-top:160px;
+  margin-bottom:70px;
+}
+.section {
+  flex:1;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:12px;
+  width:100%;
 }
 
-/* ===== TAP ===== */
+/* --- Diamond --- */
 .diamond-wrapper {
   flex:1;
   display:flex;
   align-items:center;
   justify-content:center;
+  width:100%;
 }
-
 .diamond {
   width:120px;
   height:120px;
-  background:linear-gradient(135deg,#8fd3f4,#84fab0);
+  background:linear-gradient(135deg, #8fd3f4, #84fab0);
   clip-path: polygon(50% 0%,90% 25%,100% 60%,50% 100%,0% 60%,10% 25%);
-  animation:breathe 4s infinite ease-in-out;
-  transform: scale(var(--hit,1));
+  animation:breathe 3.8s ease-in-out infinite;
+  transform:scale(var(--hit-scale,1));
+  transition: transform 0.12s;
 }
-
 @keyframes breathe {
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.04)}
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.04);}
 }
 
-.bottom {
-  margin-top:20px;
-  text-align:center;
-}
-
+.bottom { margin-top:16px; }
 button {
-  padding:14px 30px;
+  padding:12px 28px;
   font-size:18px;
-  border-radius:14px;
+  border-radius:12px;
   border:none;
   background:#1f6bff;
   color:#fff;
+  cursor:pointer;
 }
+button:disabled { background:#444; }
 
-/* ===== MENU ===== */
+/* --- Menu --- */
 #menu {
   position:fixed;
   bottom:0;
   width:100%;
   display:flex;
   justify-content:space-around;
-  background: rgba(0,0,0,0.9);
-  padding:10px 0;
+  background: rgba(0,0,0,0.85);
+  padding:8px 0;
+  z-index:12;
 }
-
 .menu-btn {
-  background:none;
+  background:transparent;
   border:none;
   color:#fff;
-  font-size:15px;
+  font-size:16px;
+  cursor:pointer;
+  padding:8px;
 }
-
 .menu-btn.active {
   color:#8fd3f4;
   font-weight:bold;
 }
 
-/* ===== CARDS ===== */
+/* --- Cards --- */
 .card {
   background:#222;
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:12px;
+  border-radius:10px;
+  padding:12px;
+  margin:8px 0;
+  width:90%;
+  max-width:340px;
   text-align:center;
 }
+.card button {
+  margin-top:10px;
+  width:100%;
+}
 
-/* ===== GRID ===== */
-.grid {
+/* --- X Section --- */
+#xSection .grid {
   display:grid;
   grid-template-columns:repeat(4,1fr);
+  grid-template-rows:repeat(6,1fr);
   gap:6px;
+  width:100%;
+  max-width:360px;
 }
-
-.cell {
-  background:linear-gradient(135deg,#8fd3f4,#84fab0);
+#xSection .cell {
+  background: linear-gradient(135deg, #8fd3f4, #84fab0);
   border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
   color:#000;
-  padding:14px 0;
-  text-align:center;
 }
 </style>
 </head>
 
 <body>
-<div class="app">
 
-  <div class="top">
-    <span id="totalDiamonds">0.000</span>
-    <div id="level">LEVEL 1</div>
-    <div class="progress-container"><div id="progressBar"></div></div>
-    <div id="timerContainer"><div id="timer">00:05:00</div></div>
-  </div>
+<div class="top">
+  <span id="totalDiamonds">0.000</span>
+  <div id="level">LEVEL 1</div>
+  <div class="progress-container"><div id="progressBar"></div></div>
+</div>
 
-  <div class="main">
+<div id="timerContainer"><div id="timer">00:05:00</div></div>
 
-    <div id="tapSection" class="section active">
-      <div class="diamond-wrapper">
-        <div id="diamond" class="diamond"></div>
-      </div>
-      <div class="bottom">
-        <button id="tapBtn">TAP</button>
-      </div>
+<div class="main">
+  <div id="tapSection" class="section" style="display:flex;">
+    <div class="diamond-wrapper">
+      <div id="diamond" class="diamond"></div>
     </div>
-
-    <div id="xSection" class="section">
-      <div class="card">Поле X</div>
-      <div class="grid">
-        ${Array.from({length:24},(_,i)=>`<div class="cell">${i+1}</div>`).join('')}
-      </div>
+    <div class="bottom">
+      <button id="tapBtn">TAP</button>
     </div>
-
   </div>
 
-  <div id="menu">
-    <button class="menu-btn active" data-s="tapSection">TAP</button>
-    <button class="menu-btn" data-s="xSection">X</button>
+  <div id="upgradeSection" class="section">
+    <h2>Прокачка</h2>
+    <div class="card"><p>Coming Soon</p></div>
   </div>
 
+  <div id="xSection" class="section">
+    <div class="grid">
+      <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+      <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+      <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+      <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
+      <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
+      <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
+    </div>
+  </div>
+
+  <div id="farmSection" class="section">
+    <h2>Фарм</h2>
+    <div class="card"><p>Coming Soon</p></div>
+  </div>
+
+  <div id="friendsSection" class="section">
+    <h2>Друзья</h2>
+    <div class="card">
+      <p>Здесь будут ваши друзья</p>
+      <button>Добавить друга</button>
+    </div>
+  </div>
+</div>
+
+<div id="menu">
+  <button class="menu-btn active" data-section="tapSection">TAP</button>
+  <button class="menu-btn" data-section="upgradeSection">Прокачка</button>
+  <button class="menu-btn" data-section="xSection">X</button>
+  <button class="menu-btn" data-section="farmSection">Фарм</button>
+  <button class="menu-btn" data-section="friendsSection">Друзья</button>
 </div>
 
 <script>
-/* ===== TELEGRAM IMMERSIVE ===== */
-if (Telegram?.WebApp) {
-  const tg = Telegram.WebApp;
+const CONFIG = { tapValue:0.037, sessionDuration:5000, maxTouches:5, urgentThreshold:1000 };
+let totalDiamonds = parseFloat(localStorage.getItem('totalDiamonds')) || 0;
+let level = parseInt(localStorage.getItem('level')) || 1;
+let progress = parseFloat(localStorage.getItem('progress')) || 0;
+const diamondsPerLevel = 100;
 
-  tg.ready();
-  tg.expand();
-  tg.setBackgroundColor('#000000');
-  tg.setHeaderColor('#000000');
+let active=false, startTime=0, timerInterval=null;
+const activePointers = new Set();
 
-  const setVH = () => {
-    document.documentElement.style.setProperty('--tg-vh', tg.viewportHeight + 'px');
-  };
+const tapBtn=document.getElementById('tapBtn');
+const diamond=document.getElementById('diamond');
+const totalDiamondsText=document.getElementById('totalDiamonds');
+const levelText=document.getElementById('level');
+const progressBar=document.getElementById('progressBar');
+const timer=document.getElementById('timer');
+const timerContainer=document.getElementById('timerContainer');
 
-  setVH();
-  tg.onEvent('viewportChanged', setVH);
+function updateUI(){
+  totalDiamondsText.innerText=totalDiamonds.toFixed(3);
+  levelText.innerText=`LEVEL ${level}`;
+  progressBar.style.width=`${Math.min((progress/diamondsPerLevel)*100,100)}%`;
+  localStorage.setItem('totalDiamonds',totalDiamonds);
+  localStorage.setItem('level',level);
+  localStorage.setItem('progress',progress);
 }
+updateUI();
 
-/* ===== GAME LOGIC ===== */
-const CONFIG = { tap:0.037, time:5000 };
-let total = +localStorage.total || 0;
-let lvl = +localStorage.lvl || 1;
-let prog = +localStorage.prog || 0;
+document.querySelectorAll('.menu-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(active) return;
+    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+    document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(btn.dataset.section).style.display='flex';
+    btn.classList.add('active');
+  });
+});
 
-const td = document.getElementById('totalDiamonds');
-const lvlEl = document.getElementById('level');
-const bar = document.getElementById('progressBar');
-const timer = document.getElementById('timer');
-const tWrap = document.getElementById('timerContainer');
-const diamond = document.getElementById('diamond');
-
-function ui(){
-  td.textContent = total.toFixed(3);
-  lvlEl.textContent = 'LEVEL ' + lvl;
-  bar.style.width = (prog%100) + '%';
-  localStorage.total=total;
-  localStorage.lvl=lvl;
-  localStorage.prog=prog;
-}
-ui();
-
-let active=false,start;
-
-document.getElementById('tapBtn').onclick=()=>{
+function startSession(){
   if(active) return;
   active=true;
-  tWrap.style.display='block';
-  start=performance.now();
-  tick();
-};
-
-function tick(){
-  if(!active) return;
-  const r = Math.max(CONFIG.time-(performance.now()-start),0);
-  timer.textContent='00:'+String(Math.floor(r/1000)).padStart(2,'0');
-  if(r<=0){active=false;tWrap.style.display='none';return;}
-  requestAnimationFrame(tick);
+  tapBtn.disabled=true;
+  timerContainer.style.display='block';
+  timer.classList.remove('urgent');
+  startTime=performance.now();
+  timerInterval=setInterval(updateTimer,50);
+  activePointers.clear();
 }
 
-document.body.onpointerdown=e=>{
-  if(!active) return;
-  total+=CONFIG.tap;
-  prog+=CONFIG.tap;
-  if(prog>=100){prog-=100;lvl++;}
-  diamond.style.setProperty('--hit',1.08);
-  ui();
-};
-document.body.onpointerup=()=>diamond.style.setProperty('--hit',1);
+function endSession(){
+  active=false;
+  tapBtn.disabled=false;
+  timerContainer.style.display='none';
+  activePointers.clear();
+  diamond.style.setProperty('--hit-scale',1);
+  clearInterval(timerInterval);
+}
 
-/* ===== MENU ===== */
-document.querySelectorAll('.menu-btn').forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    document.getElementById(b.dataset.s).classList.add('active');
-    document.querySelectorAll('.menu-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-  };
+function updateTimer(){
+  const remaining = Math.max(CONFIG.sessionDuration - (performance.now() - startTime), 0);
+  const seconds = Math.floor(remaining / 1000);
+  const ms = Math.floor((remaining % 1000) / 10);
+  timer.innerText = `00:${seconds.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+  if(remaining <= CONFIG.urgentThreshold) timer.classList.add('urgent');
+  if(remaining <= 0) endSession();
+}
+
+document.body.addEventListener('pointerdown',e=>{
+  if(!active) return;
+  if(!activePointers.has(e.pointerId)){
+    activePointers.add(e.pointerId);
+    const touches=Math.min(activePointers.size,CONFIG.maxTouches);
+    const gain=CONFIG.tapValue*touches;
+    totalDiamonds+=gain;
+    progress+=gain;
+    if(progress>=diamondsPerLevel){progress-=diamondsPerLevel;level++;}
+    diamond.style.setProperty('--hit-scale',1+touches*0.06);
+    updateUI();
+  }
 });
+
+document.body.addEventListener('pointerup',e=>{
+  activePointers.delete(e.pointerId);
+  const touches=Math.min(activePointers.size,CONFIG.maxTouches);
+  diamond.style.setProperty('--hit-scale', active ? 1+touches*0.06 : 1);
+});
+
+tapBtn.onclick=startSession;
+
+/* Telegram WebApp */
+if (window.Telegram && window.Telegram.WebApp) {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#000000');
+  tg.setBackgroundColor('#000000');
+  tg.disableVerticalSwipes();
+  tg.MainButton.hide();
+}
 </script>
+
 </body>
 </html>
 
