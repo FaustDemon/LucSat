@@ -32,7 +32,7 @@
     text-align:center; 
     pointer-events:none; 
     z-index:11; 
-    display:none; /* <- скрыт по умолчанию */
+    display:none; /* скрыт по умолчанию */
   }
   #timer { font-family:'Courier New', monospace; font-size:52px; font-weight:bold; color:#8fd3f4; text-shadow:0 0 12px rgba(143,211,244,0.5); animation: softBreathe 4s infinite ease-in-out; }
   #timer.urgent { color:#ff69b4; text-shadow:0 0 16px rgba(255,105,180,0.7); animation: urgentBreathe 1.2s infinite ease-in-out; }
@@ -41,7 +41,7 @@
 
   /* --- Main sections --- */
   .main { flex:1; display:flex; flex-direction:column; margin-top:160px; margin-bottom:70px; }
-  .section { flex:1; display:none; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px; overflow-y:auto; width:100%; }
+  .section { flex:1; display:none; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px; overflow-y:auto; width:100%; /* <-- scroll vertical */ }
 
   /* --- Diamond TAP --- */
   .diamond-wrapper { flex:1; display:flex; align-items:center; justify-content:center; width:100%; }
@@ -62,7 +62,15 @@
   .card button { margin-top:10px; width:100%; }
 
   /* --- Section X grid --- */
-  #xSection .grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(6,1fr); gap:6px; width:100%; max-width:360px; height:100%; }
+  #xSection .grid { 
+    display:grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    grid-auto-rows: minmax(80px, auto); /* <-- фиксированная минимальная высота для ячеек */
+    gap:6px; 
+    width:100%; 
+    max-width:360px; 
+    /* height:100%; <- убрано */
+  }
   #xSection .grid .cell {
     background: linear-gradient(135deg, #8fd3f4, #84fab0);
     border-radius:8px;
@@ -104,27 +112,6 @@
   <div id="xSection" class="section">
     <div class="card">
       <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-    </div>
-    <div class="card">
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-    </div>
-    <div class="card">
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
-      <p>Поле для будущих ячеек</p>
     </div>
     <div class="grid">
       <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
@@ -133,6 +120,7 @@
       <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div>
       <div class="cell">17</div><div class="cell">18</div><div class="cell">19</div><div class="cell">20</div>
       <div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
+      <!-- можно добавлять новые ячейки, скролл будет работать -->
     </div>
   </div>
 
@@ -253,12 +241,9 @@ if(window.Telegram && window.Telegram.WebApp){
   tg.ready();
   tg.expand();
   tg.disableVerticalSwipes();
-  if (tg.showHeader) tg.showHeader(false); // <- скрываем заголовок бота
+  if (tg.showHeader) tg.showHeader(false); // скрываем заголовок бота
 }
 </script>
 </body>
 </html>
-
-
-
 
